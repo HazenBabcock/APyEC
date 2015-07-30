@@ -1,10 +1,15 @@
 #!/usr/bin/env python
 
+import glob
+import os
 import sys
 
 from PyQt4 import QtCore, QtGui
 
 import jezen_ui as jezenUi
+
+import notebook
+
 
 class Jezen(QtGui.QMainWindow):
 
@@ -17,9 +22,10 @@ class Jezen(QtGui.QMainWindow):
         self.ui.setupUi(self)
 
         # Load settings
-        self.directory = self.settings.value("directory", "./").toString()
+        self.directory = str(self.settings.value("directory", "./").toString())
         
         # Connect signals
+        self.ui.actionNew_Notebook.triggered.connect(self.handleNewNotebook)
         self.ui.actionSet_Directory.triggered.connect(self.handleSetDirectory)
         self.ui.actionQuit.triggered.connect(self.handleQuit)
 
@@ -29,12 +35,21 @@ class Jezen(QtGui.QMainWindow):
     def closeEvent(self, event):
         self.settings.setValue("directory", self.directory)
 
+    def handleNewNotebook(self):
+        [name, ok] = QtGui.QInputDialog.getText(self,
+                                                'New Notebook',
+                                                'Enter the notebooks name:')        
+        if ok:
+            nb = notebook.NoteBook(self.directory, nb_name = str(name))
+        
     def handleSetDirectory(self):
         directory = str(QtGui.QFileDialog.getExistingDirectory(self,
                                                                "New Directory",
                                                                str(self.directory),
                                                                QtGui.QFileDialog.ShowDirsOnly))
         if directory:
+            if (directory[-1] != "/"):
+                directory += "/"
             print directory
             self.directory = directory
             self.loadNotebooks()
@@ -43,7 +58,9 @@ class Jezen(QtGui.QMainWindow):
         self.close()
 
     def loadNotebooks(self):
-        pass
+        for nb in glob.glob(self.directory + "nb_*"):
+            print nb
+        
     
 
 if (__name__ == "__main__"):
