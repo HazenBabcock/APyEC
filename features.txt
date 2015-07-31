@@ -1,0 +1,38 @@
+
+Features that we want:
+
+1. Notes (created using markdown?).
+
+2. Collections / notebooks.
+
+3. Tags.
+
+4. (Relatively) easy incorporation of non-text content like PDFs or images.
+
+5. Distributed.
+
+6. Can work offline.
+
+7. (Controlled) sharing (at the note level? at the notebook level?).
+--> I would vote at the notebook level.
+
+8. Revision history for notes.
+
+9. Links point between notes point to the version of the note when the link
+was created.
+
+10. Merge / conflict resolution for shared notes, or locks on notes when
+"checked out" (less optimal?).
+--> I would vote merge/conflict resolution for shared notes. Checking out
+notes would be hard to enforce in combination with a distributed approach.
+
+11. The ability to add comments and responses to individual places in notes
+
+12. To do lists and time lines that have time specific events. The ability
+to send/display reminders?
+
+13. Compatible with web browsers so that it can be viewed anywhere on any
+device.
+
+14. Full compatibility with intellectual property concerns, i.e. the
+notebook could be used as valid evidence of timing in patent disputes.
