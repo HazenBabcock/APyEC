@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'jezen.ui'
 #
-# Created: Wed Jul 29 05:53:50 2015
+# Created: Thu Jul 30 20:30:29 2015
 #      by: PyQt4 UI code generator 4.11.3
 #
 # WARNING! All changes made in this file will be lost!
@@ -41,9 +41,9 @@ class Ui_MainWindow(object):
         self.notebookGroupBox.setObjectName(_fromUtf8("notebookGroupBox"))
         self.verticalLayout = QtGui.QVBoxLayout(self.notebookGroupBox)
         self.verticalLayout.setObjectName(_fromUtf8("verticalLayout"))
-        self.notebookListView = QtGui.QListView(self.notebookGroupBox)
-        self.notebookListView.setObjectName(_fromUtf8("notebookListView"))
-        self.verticalLayout.addWidget(self.notebookListView)
+        self.noteBookMVC = NoteBookMVC(self.notebookGroupBox)
+        self.noteBookMVC.setObjectName(_fromUtf8("noteBookMVC"))
+        self.verticalLayout.addWidget(self.noteBookMVC)
         self.keywordGroupBox = QtGui.QGroupBox(self.notebookSplitter)
         self.keywordGroupBox.setObjectName(_fromUtf8("keywordGroupBox"))
         self.verticalLayout_3 = QtGui.QVBoxLayout(self.keywordGroupBox)
@@ -179,3 +179,4 @@ class Ui_MainWindow(object):
         self.actionNew_Note.setText(_translate("MainWindow", "New Note", None))
         self.actionPrint_Note.setText(_translate("MainWindow", "Print Note", None))
 
+from notebook import NoteBookMVC

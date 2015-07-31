@@ -41,6 +41,7 @@ class Jezen(QtGui.QMainWindow):
                                                 'Enter the notebooks name:')        
         if ok:
             nb = notebook.NoteBook(self.directory, nb_name = str(name))
+            self.ui.noteBookMVC.addNotebook(nb)
         
     def handleSetDirectory(self):
         directory = str(QtGui.QFileDialog.getExistingDirectory(self,
@@ -58,10 +59,11 @@ class Jezen(QtGui.QMainWindow):
         self.close()
 
     def loadNotebooks(self):
-        for nb in glob.glob(self.directory + "nb_*"):
-            print nb
         
-    
+        # Load individual notebooks.
+        self.ui.noteBookMVC.loadNotebooks(map(lambda(x): notebook.NoteBook(self.directory, nb_uuid = x[len(self.directory) + 3:]),
+                                              glob.glob(self.directory + "nb_*")))
+        
 
 if (__name__ == "__main__"):
     app = QtGui.QApplication(sys.argv)
