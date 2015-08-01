@@ -30,7 +30,7 @@
         </property>
         <layout class="QVBoxLayout" name="verticalLayout">
          <item>
-          <widget class="NoteBookMVC" name="noteBookMVC"/>
+          <widget class="NotebookMVC" name="notebookMVC"/>
          </item>
         </layout>
        </widget>
@@ -51,7 +51,7 @@
        </property>
        <layout class="QVBoxLayout" name="verticalLayout_2">
         <item>
-         <widget class="QListView" name="notesListView"/>
+         <widget class="NoteMVC" name="noteMVC"/>
         </item>
         <item>
          <layout class="QHBoxLayout" name="horizontalLayout_4">
@@ -251,9 +251,14 @@
  </widget>
  <customwidgets>
   <customwidget>
-   <class>NoteBookMVC</class>
+   <class>NotebookMVC</class>
    <extends>QListView</extends>
    <header>notebook</header>
+  </customwidget>
+  <customwidget>
+   <class>NoteMVC</class>
+   <extends>QListView</extends>
+   <header>note</header>
   </customwidget>
  </customwidgets>
  <resources/>

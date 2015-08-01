@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'jezen.ui'
 #
-# Created: Thu Jul 30 20:30:29 2015
+# Created: Sat Aug  1 07:54:20 2015
 #      by: PyQt4 UI code generator 4.11.3
 #
 # WARNING! All changes made in this file will be lost!
@@ -41,9 +41,9 @@ class Ui_MainWindow(object):
         self.notebookGroupBox.setObjectName(_fromUtf8("notebookGroupBox"))
         self.verticalLayout = QtGui.QVBoxLayout(self.notebookGroupBox)
         self.verticalLayout.setObjectName(_fromUtf8("verticalLayout"))
-        self.noteBookMVC = NoteBookMVC(self.notebookGroupBox)
-        self.noteBookMVC.setObjectName(_fromUtf8("noteBookMVC"))
-        self.verticalLayout.addWidget(self.noteBookMVC)
+        self.notebookMVC = NotebookMVC(self.notebookGroupBox)
+        self.notebookMVC.setObjectName(_fromUtf8("notebookMVC"))
+        self.verticalLayout.addWidget(self.notebookMVC)
         self.keywordGroupBox = QtGui.QGroupBox(self.notebookSplitter)
         self.keywordGroupBox.setObjectName(_fromUtf8("keywordGroupBox"))
         self.verticalLayout_3 = QtGui.QVBoxLayout(self.keywordGroupBox)
@@ -55,9 +55,9 @@ class Ui_MainWindow(object):
         self.notesGroupBox.setObjectName(_fromUtf8("notesGroupBox"))
         self.verticalLayout_2 = QtGui.QVBoxLayout(self.notesGroupBox)
         self.verticalLayout_2.setObjectName(_fromUtf8("verticalLayout_2"))
-        self.notesListView = QtGui.QListView(self.notesGroupBox)
-        self.notesListView.setObjectName(_fromUtf8("notesListView"))
-        self.verticalLayout_2.addWidget(self.notesListView)
+        self.noteMVC = NoteMVC(self.notesGroupBox)
+        self.noteMVC.setObjectName(_fromUtf8("noteMVC"))
+        self.verticalLayout_2.addWidget(self.noteMVC)
         self.horizontalLayout_4 = QtGui.QHBoxLayout()
         self.horizontalLayout_4.setObjectName(_fromUtf8("horizontalLayout_4"))
         spacerItem = QtGui.QSpacerItem(40, 20, QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Minimum)
@@ -179,4 +179,5 @@ class Ui_MainWindow(object):
         self.actionNew_Note.setText(_translate("MainWindow", "New Note", None))
         self.actionPrint_Note.setText(_translate("MainWindow", "Print Note", None))
 
-from notebook import NoteBookMVC
+from note import NoteMVC
+from notebook import NotebookMVC
