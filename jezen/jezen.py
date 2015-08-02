@@ -7,6 +7,7 @@ from PyQt4 import QtCore, QtGui
 
 import jezen_ui as jezenUi
 
+import editor
 import notebook
 
 
@@ -20,6 +21,8 @@ class Jezen(QtGui.QMainWindow):
         self.ui = jezenUi.Ui_MainWindow()
         self.ui.setupUi(self)
 
+        self.editor_viewer = editor.EditorViewer(self.ui.viewEditTabWidget)
+        
         # Load settings
         self.directory = str(self.settings.value("directory", "./").toString())
         
@@ -29,18 +32,22 @@ class Jezen(QtGui.QMainWindow):
         self.ui.actionSet_Directory.triggered.connect(self.handleSetDirectory)
         self.ui.actionQuit.triggered.connect(self.handleQuit)
 
-        # Start
+        self.ui.notebookMVC.addNote.connect(self.handleNewNote)
+        
+        self.ui.noteMVC.selectedNoteChanged.connect(self.editor_viewer.newNote)
+
         self.loadNotebooks()
         
     def closeEvent(self, event):
         self.settings.setValue("directory", self.directory)
 
-    def handleNewNote(self, boolean):
+    def handleNewNote(self, nb):
         [name, ok] = QtGui.QInputDialog.getText(self,
                                                 'New Note',
                                                 'Enter the notes name:')        
         if ok:
-            nb = notebook.chooseNotebook(self.ui.notebookMVC)
+            if not (isinstance(nb, notebook.NotebookStandardItem)):
+                nb = notebook.chooseNotebook(self.ui.notebookMVC)
             if nb is not None:
                 self.ui.noteMVC.addNote(nb, str(name))
         

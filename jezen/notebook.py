@@ -69,12 +69,6 @@ class Notebook(object):
             xml = ElementTree.parse(self.directory + "notebook.xml").getroot()
             self.name = xml.find("name").text
 
-            # Load notes.
-            for n_id in map(lambda(x): x[len(self.directory):-4], glob.glob(self.directory + "*.xml")):
-                if not (n_id == "notebook"):
-                    print "found:", n_id
-                #self.notes.append(note.Note(self.directory, uuid = n_id))
-            
         # Create a new notebook.
         else:
             self.name = nb_name
@@ -144,7 +138,8 @@ class NotebookMVC(QtGui.QListView):
     """
     Encapsulates a list view specialized for notebooks and it's associated model.
     """
-    selectedNotesChanged = QtCore.pyqtSignal(list)
+    addNote = QtCore.pyqtSignal(object)
+    selectedNotebooksChanged = QtCore.pyqtSignal(list)
     
     def __init__(self, parent = None):
         QtGui.QListView.__init__(self, parent)
@@ -152,9 +147,12 @@ class NotebookMVC(QtGui.QListView):
         self.setSelectionMode(QtGui.QAbstractItemView.ExtendedSelection)
 
         # Context menu
+        self.addNoteAction = QtGui.QAction(self.tr("Add"), self)
+        self.addNoteAction.triggered.connect(self.handleAddNote)
         self.deleteAction = QtGui.QAction(self.tr("Delete"), self)
         self.deleteAction.triggered.connect(self.handleDelete)
         self.popup_menu = QtGui.QMenu(self)
+        self.popup_menu.addAction(self.addNoteAction)
         self.popup_menu.addAction(self.deleteAction)
 
         # Notebook model
@@ -162,6 +160,9 @@ class NotebookMVC(QtGui.QListView):
         self.notebook_proxy_model = NotebookSortFilterProxyModel()
         self.notebook_proxy_model.setSourceModel(self.notebook_model)
         self.setModel(self.notebook_proxy_model)
+
+        # Get selection changes.
+        self.selectionModel().selectionChanged.connect(self.handleSelectionChange)
         
     def addNotebook(self, directory, name):
         nb = Notebook(directory, nb_name = name)
@@ -184,15 +185,11 @@ class NotebookMVC(QtGui.QListView):
             source_index = self.notebook_proxy_model.mapToSource(index)
             selected_notebooks.append(self.notebook_model.itemFromIndex(source_index))
         return selected_notebooks
+
+    def handleAddNote(self, boolean):
+        source_index = self.notebook_proxy_model.mapToSource(self.right_clicked)
+        self.addNote.emit(self.notebook_model.itemFromIndex(source_index))
         
-    def loadNotebooks(self, directory):
-        self.clearNotebooks()
-
-        for nb_id in map(lambda(x): x[len(directory) + 3:], glob.glob(directory + "nb_*")):
-            self.notebook_model.appendRow(NotebookStandardItem(Notebook(directory, nb_uuid = nb_id)))
-
-        self.notebook_proxy_model.sort(0)
-
     def handleDelete(self, boolean):
         source_index = self.notebook_proxy_model.mapToSource(self.right_clicked)
         notebook = self.notebook_model.itemFromIndex(source_index)
@@ -205,7 +202,20 @@ class NotebookMVC(QtGui.QListView):
                                            QtGui.QMessageBox.No)
         if (reply == QtGui.QMessageBox.Yes):
             self.notebook_model.removeRow(source_index.row())
-    
+
+    def handleSelectionChange(self, new_item_selection, old_item_selection):
+        selected_notebooks = self.getSelectedNotebooks()
+        if (len(selected_notebooks) > 0):
+            self.selectedNotebooksChanged.emit(selected_notebooks)
+        
+    def loadNotebooks(self, directory):
+        self.clearNotebooks()
+
+        for nb_id in map(lambda(x): x[len(directory) + 3:], glob.glob(directory + "nb_*")):
+            self.notebook_model.appendRow(NotebookStandardItem(Notebook(directory, nb_uuid = nb_id)))
+
+        self.notebook_proxy_model.sort(0)
+            
     def mousePressEvent(self, event):
         if (event.button() == QtCore.Qt.RightButton):
             self.right_clicked = self.indexAt(event.pos())

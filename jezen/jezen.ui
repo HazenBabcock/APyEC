@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1203</width>
-    <height>833</height>
+    <width>1088</width>
+    <height>531</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -82,7 +82,7 @@
         </item>
        </layout>
       </widget>
-      <widget class="QTabWidget" name="tabWidget">
+      <widget class="QTabWidget" name="viewEditTabWidget">
        <property name="currentIndex">
         <number>0</number>
        </property>
@@ -90,110 +90,6 @@
         <attribute name="title">
          <string>View</string>
         </attribute>
-       </widget>
-       <widget class="QWidget" name="editTab">
-        <attribute name="title">
-         <string>Edit</string>
-        </attribute>
-        <layout class="QVBoxLayout" name="verticalLayout_7">
-         <item>
-          <widget class="QSplitter" name="editSplitter">
-           <property name="orientation">
-            <enum>Qt::Vertical</enum>
-           </property>
-           <widget class="QGroupBox" name="keywordEditGroupBox">
-            <property name="sizePolicy">
-             <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
-              <horstretch>0</horstretch>
-              <verstretch>0</verstretch>
-             </sizepolicy>
-            </property>
-            <property name="maximumSize">
-             <size>
-              <width>16777215</width>
-              <height>64</height>
-             </size>
-            </property>
-            <property name="title">
-             <string>Keywords</string>
-            </property>
-            <layout class="QVBoxLayout" name="verticalLayout_6">
-             <item>
-              <widget class="QLineEdit" name="keywordLineEdit"/>
-             </item>
-            </layout>
-           </widget>
-           <widget class="QGroupBox" name="markdownGroupBox">
-            <property name="title">
-             <string>Markdown</string>
-            </property>
-            <layout class="QVBoxLayout" name="verticalLayout_5">
-             <item>
-              <widget class="QTextEdit" name="noteTextEdit"/>
-             </item>
-            </layout>
-           </widget>
-           <widget class="QGroupBox" name="attachmentsGroupBox">
-            <property name="title">
-             <string>Attachments</string>
-            </property>
-            <layout class="QVBoxLayout" name="verticalLayout_4">
-             <item>
-              <widget class="QColumnView" name="attachColumnView"/>
-             </item>
-             <item>
-              <layout class="QHBoxLayout" name="horizontalLayout">
-               <item>
-                <spacer name="horizontalSpacer">
-                 <property name="orientation">
-                  <enum>Qt::Horizontal</enum>
-                 </property>
-                 <property name="sizeHint" stdset="0">
-                  <size>
-                   <width>40</width>
-                   <height>20</height>
-                  </size>
-                 </property>
-                </spacer>
-               </item>
-               <item>
-                <widget class="QPushButton" name="attachUploadButton">
-                 <property name="text">
-                  <string>Upload</string>
-                 </property>
-                </widget>
-               </item>
-              </layout>
-             </item>
-            </layout>
-           </widget>
-          </widget>
-         </item>
-         <item>
-          <layout class="QHBoxLayout" name="horizontalLayout_2">
-           <item>
-            <spacer name="horizontalSpacer_2">
-             <property name="orientation">
-              <enum>Qt::Horizontal</enum>
-             </property>
-             <property name="sizeHint" stdset="0">
-              <size>
-               <width>40</width>
-               <height>20</height>
-              </size>
-             </property>
-            </spacer>
-           </item>
-           <item>
-            <widget class="QPushButton" name="saveButton">
-             <property name="text">
-              <string>Save</string>
-             </property>
-            </widget>
-           </item>
-          </layout>
-         </item>
-        </layout>
        </widget>
       </widget>
      </widget>
@@ -205,7 +101,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1203</width>
+     <width>1088</width>
      <height>26</height>
     </rect>
    </property>

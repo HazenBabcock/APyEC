@@ -14,61 +14,7 @@ from xml.etree import ElementTree
 
 import misc
 
-class Note(object):
-    """
-    This class is the interface between the notes on the disk and
-    what is displayed. It takes care of loading and saving different
-    versions using our XML schema.
-    """
-    def __init__(self, directory, uuid = None, name = None):
-        """
-        Load on old note (when given a uuid), or create a
-        new note (when given a name).
-        
-        Note: The uuid is the actual name of the note file on the disk.
-        """
 
-        # Load an old note.
-        if uuid is not None:
-            self.uuid = uuid
-            self.filename = directory + self.uuid
-            xml = ElementTree.parse(self.filename + ".xml").getroot()
-            self.markdown = xml.find("markdown").text
-            self.name = xml.find("name").text
-
-        # Create a new note.
-        else:
-            self.markdown = ""
-            self.name = name
-            self.uuid = str(uuid.uuid1())
-            self.filename = directory + self.uuid
-
-    def getName(self):
-        return self.name
-
-    def moveNote(self, new_directory):
-        """
-        Notebooks are just directories, so update the filename accordingly.
-        """
-        self.filename = new_directory + self.uuid
-        
-    def saveNote(self):
-
-        # Update XML.
-        xml = ElementTree.Element("note")
-        
-        name_xml = ElementTree.SubElement(xml, "date")
-        name_xml.text = self.name
-        
-        markdown_xml = ElementTree.SubElement(xml, "text")
-        markdown_xml.text = self.markdown
-
-        misc.pSaveXML(self.directory + self.uuid, xml)
-
-        # Use git to check if this file is different from before
-        # and create a commit if it is.
-
-        
 class NoteMVC(QtGui.QListView):
     """
     Encapsulates a list view specialized for notes and it's associated model.
@@ -84,6 +30,9 @@ class NoteMVC(QtGui.QListView):
         self.note_proxy_model.setSourceModel(self.note_model)
         self.setModel(self.note_proxy_model)
 
+        # Get selection changes.
+        self.selectionModel().selectionChanged.connect(self.handleSelectionChange)
+        
     def addNote(self, notebook, name):
         """
         Add a new blank note.
@@ -93,6 +42,10 @@ class NoteMVC(QtGui.QListView):
 
     def clearNotes(self):
         self.note_model.clear()
+
+    def handleSelectionChange(self, new_item_selection, old_item_selection):
+        source_index = self.note_proxy_model.mapToSource(self.selectedIndexes()[0])
+        self.selectedNoteChanged.emit(self.note_model.itemFromIndex(source_index))
 
     def loadNotes(self, notebook):
         """
@@ -111,10 +64,10 @@ class NoteMVC(QtGui.QListView):
 #        else:
 #            QtGui.QListView.mousePressEvent(self, event)
 
-    def mouseReleaseEvent(self, event):
-        if (event.button() == QtCore.Qt.LeftButton):
-            source_index = self.note_proxy_model.mapToSource(self.selectedIndexes()[0])
-            self.emit.selectedNoteChanged(self.note_model.itemFromIndex(source_index))
+#    def mouseReleaseEvent(self, event):
+#        if (event.button() == QtCore.Qt.LeftButton):
+#            source_index = self.note_proxy_model.mapToSource(self.selectedIndexes()[0])
+#            self.selectedNoteChanged.emit(self.note_model.itemFromIndex(source_index))
 
 
 class NoteSortFilterProxyModel(QtGui.QSortFilterProxyModel):
@@ -127,6 +80,8 @@ class NoteSortFilterProxyModel(QtGui.QSortFilterProxyModel):
 class NoteStandardItem(QtGui.QStandardItem):
     """
     A single note.
+
+    This class also handles loading and saving notes.
     """
     def __init__(self, notebook, note_file = None, note_name = None):
         """
@@ -138,6 +93,7 @@ class NoteStandardItem(QtGui.QStandardItem):
         note_file is path/note_(uuid).xml
         """
         self.notebook = notebook
+        self.unsaved_markdown = None
 
         # Load an old note.
         if note_file is not None:
@@ -169,9 +125,15 @@ class NoteStandardItem(QtGui.QStandardItem):
         Remove the note file from the disk and create a git commit.
         """
         pass
+
+    def getMarkdown(self):
+        return self.markdown
     
     def getName(self):
         return self.name
+
+    def getUnsavedMarkdown(self):
+        return self.unsaved_markdown
 
     def moveNote(self, new_notebook):
         """
@@ -195,15 +157,23 @@ class NoteStandardItem(QtGui.QStandardItem):
         # Save XML.
         xml = ElementTree.Element("note")
         
-        name_xml = ElementTree.SubElement(xml, "date")
+        name_xml = ElementTree.SubElement(xml, "name")
         name_xml.text = self.name
         
-        markdown_xml = ElementTree.SubElement(xml, "text")
+        markdown_xml = ElementTree.SubElement(xml, "markdown")
         markdown_xml.text = self.markdown
 
         misc.pSaveXML(self.fullname, xml)
+
+        # Delete backup.
         
         # git commit.
+
+    def setMarkdown(self, new_markdown):
+        self.markdown = new_markdown
+
+    def setUnsavedMarkdown(self, new_markdown):
+        self.unsaved_markdown = new_markdown
         
         
 class NoteStandardItemModel(QtGui.QStandardItemModel):
