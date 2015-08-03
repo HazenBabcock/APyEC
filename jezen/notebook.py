@@ -87,6 +87,7 @@ class NotebookMVC(QtGui.QListView):
     Encapsulates a list view specialized for notebooks and it's associated model.
     """
     addNote = QtCore.pyqtSignal(object)
+    addNotebook = QtCore.pyqtSignal()
     selectedNotebooksChanged = QtCore.pyqtSignal(list)
     
     def __init__(self, parent = None):
@@ -95,9 +96,11 @@ class NotebookMVC(QtGui.QListView):
         self.setSelectionMode(QtGui.QAbstractItemView.ExtendedSelection)
 
         # Context menu
-        self.addNoteAction = QtGui.QAction(self.tr("Add"), self)
+        self.addNoteAction = QtGui.QAction(self.tr("Add Note"), self)
         self.addNoteAction.triggered.connect(self.handleAddNote)
-        self.deleteAction = QtGui.QAction(self.tr("Delete"), self)
+        self.addNotebookAction = QtGui.QAction(self.tr("New Notebook"), self)
+        self.addNotebookAction.triggered.connect(self.handleAddNotebook)
+        self.deleteAction = QtGui.QAction(self.tr("Delete Notebook"), self)
         self.deleteAction.triggered.connect(self.handleDelete)
         self.popup_menu = QtGui.QMenu(self)
         self.popup_menu.addAction(self.addNoteAction)
@@ -138,6 +141,9 @@ class NotebookMVC(QtGui.QListView):
     def handleAddNote(self, boolean):
         source_index = self.notebook_proxy_model.mapToSource(self.right_clicked)
         self.addNote.emit(self.notebook_model.itemFromIndex(source_index))
+
+    def handleAddNotebook(self, boolean):
+        self.addNotebook.emit()
         
     def handleDelete(self, boolean):
         source_index = self.notebook_proxy_model.mapToSource(self.right_clicked)
@@ -151,6 +157,8 @@ class NotebookMVC(QtGui.QListView):
                                            QtGui.QMessageBox.No)
         if (reply == QtGui.QMessageBox.Yes):
             self.notebook_model.removeRow(source_index.row())
+
+            # Delete the notebooks directory here? Maybe just "hide" it?
 
     def handleSelectionChange(self, new_item_selection, old_item_selection):
         selected_notebooks = self.getSelectedNotebooks()
@@ -181,12 +189,15 @@ class NotebookSortFilterProxyModel(QtGui.QSortFilterProxyModel):
     Sort notebooks.
     """
 
-
 class NotebookStandardItem(QtGui.QStandardItem):
     """
     A single notebook in the notebook listview model.
     """
     def __init__(self, directory):
+        """
+        After creating the item you need to enter the appropriate initial
+        data using one of createWithName() or loadWithUUID.
+        """
         QtGui.QStandardItem.__init__(self, "NA")
 
         self.directory = directory + "nb_"
