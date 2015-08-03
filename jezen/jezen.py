@@ -8,6 +8,7 @@ from PyQt4 import QtCore, QtGui
 import jezen_ui as jezenUi
 
 import editor
+import misc
 import notebook
 
 
@@ -15,7 +16,9 @@ class Jezen(QtGui.QMainWindow):
 
     def __init__(self, parent = None):
         QtGui.QMainWindow.__init__(self, parent)
+        self.email = ""
         self.settings = QtCore.QSettings("jezen", "jezen")
+        self.username = ""
 
         # Load UI
         self.ui = jezenUi.Ui_MainWindow()
@@ -33,14 +36,27 @@ class Jezen(QtGui.QMainWindow):
         self.ui.actionQuit.triggered.connect(self.handleQuit)
 
         self.ui.notebookMVC.addNote.connect(self.handleNewNote)
+        self.ui.notebookMVC.selectedNotebooksChanged.connect(self.ui.noteMVC.updateNotebookFilter)
         
         self.ui.noteMVC.selectedNoteChanged.connect(self.editor_viewer.newNote)
 
         self.loadNotebooks()
-        
+
+        # Check that we have a valid identity for git commits.
+        if self.settings.value("username", None).isNull():
+            self.handleChangeIdentity(True)
+        else:
+            self.username = str(self.settings.value("username", None).toString())
+            self.email = str(self.settings.value("email", None).toString())
+            
     def closeEvent(self, event):
         self.settings.setValue("directory", self.directory)
 
+    def handleChangeIdentity(self, boolean):
+        [self.username, self.email] = misc.getUserInfo(self.username, self.email)
+        self.settings.setValue("username", self.username)
+        self.settings.setValue("email", self.email)
+        
     def handleNewNote(self, nb):
         [name, ok] = QtGui.QInputDialog.getText(self,
                                                 'New Note',
@@ -52,11 +68,11 @@ class Jezen(QtGui.QMainWindow):
                 self.ui.noteMVC.addNote(nb, str(name))
         
     def handleNewNotebook(self, boolean):
-        [name, ok] = QtGui.QInputDialog.getText(self,
-                                                'New Notebook',
-                                                'Enter the notebooks name:')        
+        [notebook_name, ok] = QtGui.QInputDialog.getText(self,
+                                                         'New Notebook',
+                                                         'Enter the notebooks name:')        
         if ok:
-            self.ui.notebookMVC.addNotebook(self.directory, str(name))
+            self.ui.notebookMVC.addNotebook(self.directory, str(notebook_name), self.username, self.email)
         
     def handleSetDirectory(self, boolean):
         directory = str(QtGui.QFileDialog.getExistingDirectory(self,

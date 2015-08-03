@@ -42,58 +42,6 @@ def chooseNotebook(notebook_mvc):
             return None
     
 
-#
-# FIXME:
-#  1. Merge with NotebookStandardItem?
-#  2. Move all file related stuff here.
-#
-class Notebook(object):
-    """
-    This class is the interface between notebooks on the disk
-    and what is displayed.
-    """
-    def __init__(self, directory, nb_uuid = None, nb_name = None):
-        """
-        Load on old notebook (when given a uuid), or create a
-        new notebook (when given a name).
-        
-        Note: The uuid is the directory that the notebook is stored in.
-        """
-        self.directory = directory + "nb_"
-        self.notes = []
-
-        # Load an old notebook.
-        if nb_uuid is not None:
-            self.uuid = nb_uuid
-            self.directory = self.directory + self.uuid + "/"
-            xml = ElementTree.parse(self.directory + "notebook.xml").getroot()
-            self.name = xml.find("name").text
-
-        # Create a new notebook.
-        else:
-            self.name = nb_name
-            self.notes = []
-            self.uuid = str(uuid.uuid1())
-
-            self.directory += self.uuid
-            os.makedirs(self.directory)
-
-            xml = ElementTree.Element("notebook")
-            name_xml = ElementTree.SubElement(xml, "name")
-            name_xml.text = self.name
-
-            self.directory += "/"
-            misc.pSaveXML(self.directory + "notebook.xml", xml)
-
-            # Create a new git repository for this notebook.
-
-    def getDirectory(self):
-        return self.directory
-    
-    def getName(self):
-        return self.name
-
-
 class NotebookChooser(QtGui.QDialog):
     """
     Dialog for choosing a NotebookStandardItem from a list of NotebookStandardItems.
@@ -164,9 +112,10 @@ class NotebookMVC(QtGui.QListView):
         # Get selection changes.
         self.selectionModel().selectionChanged.connect(self.handleSelectionChange)
         
-    def addNotebook(self, directory, name):
-        nb = Notebook(directory, nb_name = name)
-        self.notebook_model.appendRow(NotebookStandardItem(nb))
+    def addNotebook(self, directory, notebook_name, username, email):
+        nb = NotebookStandardItem(directory)
+        nb.createWithName(notebook_name, username, email)
+        self.notebook_model.appendRow(nb)
         self.notebook_proxy_model.sort(0)
 
     def clearNotebooks(self):
@@ -193,7 +142,7 @@ class NotebookMVC(QtGui.QListView):
     def handleDelete(self, boolean):
         source_index = self.notebook_proxy_model.mapToSource(self.right_clicked)
         notebook = self.notebook_model.itemFromIndex(source_index)
-        notebook_name = notebook.getNotebook().getName()
+        notebook_name = notebook.getName()
 
         reply = QtGui.QMessageBox.question(self,
                                            "Warning!",
@@ -212,7 +161,9 @@ class NotebookMVC(QtGui.QListView):
         self.clearNotebooks()
 
         for nb_id in map(lambda(x): x[len(directory) + 3:], glob.glob(directory + "nb_*")):
-            self.notebook_model.appendRow(NotebookStandardItem(Notebook(directory, nb_uuid = nb_id)))
+            nb = NotebookStandardItem(directory)
+            nb.loadWithUUID(nb_id)
+            self.notebook_model.appendRow(nb)
 
         self.notebook_proxy_model.sort(0)
             
@@ -224,61 +175,69 @@ class NotebookMVC(QtGui.QListView):
         else:
             QtGui.QListView.mousePressEvent(self, event)
 
-#    def mouseReleaseEvent(self, event):
-#        if (event.button() == QtCore.Qt.LeftButton):
-#            selected_notes = []
-#            for index in self.selectedIndexes():
-#                source_index = self.notebook_proxy_model.mapToSource(index)
-#                selected_notebooks.append(self.notebook_model.itemFromIndex(source_index))
-#                print index.row()
-        
-        
+
 class NotebookSortFilterProxyModel(QtGui.QSortFilterProxyModel):
     """
-    Sorts so that the "All" notebook is always first.
+    Sort notebooks.
     """
-#    def lessThan(self, left, right):
-#        nb1 = self.sourceModel().itemFromIndex(left).getNoteBook()
-#        nb2 = self.sourceModel().itemFromIndex(right).getNoteBook()
-#        if (nb1.getName() == "All"):
-#            return True
-#        else:
-#            return True if(nb1.getName() < nb2.getName()) else False
 
 
 class NotebookStandardItem(QtGui.QStandardItem):
     """
-    Store a single notebook in the notebook listview model.
+    A single notebook in the notebook listview model.
     """
-    def __init__(self, notebook):
-        QtGui.QStandardItem.__init__(self, notebook.getName())
-        self.notebook = notebook
-        self.number_unsaved = 0
+    def __init__(self, directory):
+        QtGui.QStandardItem.__init__(self, "NA")
 
+        self.directory = directory + "nb_"
+        self.name = None
+        self.number_unsaved = 0
+        self.uuid = None
+        
+    def createWithName(self, notebook_name, username, email):
+        self.name = notebook_name
+        self.uuid = str(uuid.uuid1())
+        self.setText(self.name)
+
+        self.directory += self.uuid
+        os.makedirs(self.directory)
+
+        xml = ElementTree.Element("notebook")
+        name_xml = ElementTree.SubElement(xml, "name")
+        name_xml.text = self.name
+
+        self.directory += "/"
+        misc.pSaveXML(self.directory + "notebook.xml", xml)
+
+        # Create a new git repository for this notebook.
+        misc.gitInit(self.directory, username, email)
+        
     def decNumberUnsaved(self):
         self.number_unsaved -= 1
         if (self.number_unsaved == 0):
             self.setForeground(QtGui.QBrush(QtGui.QColor(0,0,0)))
 
     def getDirectory(self):
-        return self.notebook.getDirectory()
+        return self.directory
     
     def getName(self):
-        return self.notebook.getName()
+        return self.name
     
-    def getNotebook(self):
-        return self.notebook
-
     def incNumberUnsaved(self):
         self.number_unsaved += 1
         self.setForeground(QtGui.QBrush(QtGui.QColor(100,0,0)))
+
+    def loadWithUUID(self, notebook_uuid):
+        self.uuid = notebook_uuid
+        self.directory = self.directory + self.uuid + "/"
+        xml = ElementTree.parse(self.directory + "notebook.xml").getroot()
+        self.name = xml.find("name").text
+        self.setText(self.name)
 
 
 class NotebookStandardItemModel(QtGui.QStandardItemModel):
     """
     The notebook listview model.
     """
-    def __init__(self, parent = None):
-        QtGui.QStandardItemModel.__init__(self, parent)
 
     

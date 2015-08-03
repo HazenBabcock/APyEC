@@ -56,6 +56,10 @@ class NoteMVC(QtGui.QListView):
 
         self.note_proxy_model.sort(0)
 
+    def updateNotebookFilter(self, notebooks):
+        self.note_proxy_model.setNotebooks(notebooks)
+        self.note_proxy_model.sort(0)
+        
 #    def mousePressEvent(self, event):
 #        if (event.button() == QtCore.Qt.RightButton):
 #            self.right_clicked = self.indexAt(event.pos())
@@ -64,18 +68,30 @@ class NoteMVC(QtGui.QListView):
 #        else:
 #            QtGui.QListView.mousePressEvent(self, event)
 
-#    def mouseReleaseEvent(self, event):
-#        if (event.button() == QtCore.Qt.LeftButton):
-#            source_index = self.note_proxy_model.mapToSource(self.selectedIndexes()[0])
-#            self.selectedNoteChanged.emit(self.note_model.itemFromIndex(source_index))
-
 
 class NoteSortFilterProxyModel(QtGui.QSortFilterProxyModel):
     """
     Sort and filter notes. At the start (or when changing directories) we
     load all the notes, but only show the ones that match the filters.
     """
+    def __init__(self, parent = None):
+        QtGui.QSortFilterProxyModel.__init__(self, parent)
+        self.keywords = []
+        self.notebooks = []
 
+    def filterAcceptsRow(self, source_row, source_parent):
+        index = self.sourceModel().index(source_row, 0, source_parent)
+        note = self.sourceModel().itemFromIndex(index)
+        accept = False
+        if (note.getNotebook() in self.notebooks):
+            accept = True
+
+        return accept
+
+    def setNotebooks(self, new_notebooks):
+        self.notebooks = new_notebooks
+        self.invalidateFilter()
+    
     
 class NoteStandardItem(QtGui.QStandardItem):
     """
@@ -131,6 +147,9 @@ class NoteStandardItem(QtGui.QStandardItem):
     
     def getName(self):
         return self.name
+
+    def getNotebook(self):
+        return self.notebook
 
     def getUnsavedMarkdown(self):
         return self.unsaved_markdown
