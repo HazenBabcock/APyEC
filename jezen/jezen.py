@@ -44,6 +44,7 @@ class Jezen(QtGui.QMainWindow):
 
         # Check that we have a valid identity for git commits.
         if self.settings.value("username", None).isNull():
+            # FIXME: Use a timer so that this dialog appears after the main window is displayed.
             self.handleChangeIdentity(True)
         else:
             self.username = str(self.settings.value("username", None).toString())

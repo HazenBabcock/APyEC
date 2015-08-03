@@ -35,6 +35,7 @@ class Editor(QtGui.QWidget):
     def getMarkdown(self):
         return str(self.ui.noteTextEdit.toPlainText())
 
+    # FIXME: Need to check if the note has changed to reduce spurious commits.
     def handleSave(self):
         self.saveNote.emit()
         
