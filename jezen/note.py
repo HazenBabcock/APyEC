@@ -4,6 +4,7 @@
    :synopsis: The Note class.
 """
 
+import datetime
 import glob
 import os
 import uuid
@@ -110,7 +111,8 @@ class NoteStandardItem(QtGui.QStandardItem):
         """
         self.notebook = notebook
         self.unsaved_markdown = None
-
+        self.versions = []
+        
         # Load an old note.
         if note_file is not None:
             self.fullname = note_file
@@ -119,6 +121,8 @@ class NoteStandardItem(QtGui.QStandardItem):
             self.markdown = xml.find("markdown").text
             self.name = xml.find("name").text
 
+            self.versions = self.notebook.getNoteVersions(self.filename)
+
         # Create a new note.
         else:
             self.markdown = ""
@@ -126,7 +130,7 @@ class NoteStandardItem(QtGui.QStandardItem):
             self.filename = "note_" + str(uuid.uuid1()) + ".xml"
             self.fullname = self.notebook.getDirectory() + self.filename
             
-        QtGui.QStandardItem.__init__(self, self.name)
+        QtGui.QStandardItem.__init__(self, self.name + " (" + str(len(self.versions)) +")")
 
     def copyNote(self, notebook):
         """
@@ -151,6 +155,9 @@ class NoteStandardItem(QtGui.QStandardItem):
     def getNotebook(self):
         return self.notebook
 
+    def getNumberOfVersions(self):
+        return len(self.versions)
+        
     def getUnsavedMarkdown(self):
         return self.unsaved_markdown
 
@@ -178,6 +185,9 @@ class NoteStandardItem(QtGui.QStandardItem):
         
         name_xml = ElementTree.SubElement(xml, "name")
         name_xml.text = self.name
+
+        date_xml = ElementTree.SubElement(xml, "date")
+        date_xml.text = str(datetime.datetime.now())
         
         markdown_xml = ElementTree.SubElement(xml, "markdown")
         markdown_xml.text = self.markdown
@@ -187,6 +197,9 @@ class NoteStandardItem(QtGui.QStandardItem):
         # Delete backup.
         
         # git commit.
+        misc.gitSave(self.notebook.getDirectory(),
+                     self.filename,
+                     "commit " + str(self.notebook.incCommitNumber()))
 
     def setMarkdown(self, new_markdown):
         self.markdown = new_markdown

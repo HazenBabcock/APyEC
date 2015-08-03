@@ -200,7 +200,9 @@ class NotebookStandardItem(QtGui.QStandardItem):
         """
         QtGui.QStandardItem.__init__(self, "NA")
 
+        self.commit_number = -1
         self.directory = directory + "nb_"
+        self.git_log = []
         self.name = None
         self.number_unsaved = 0
         self.uuid = None
@@ -230,10 +232,21 @@ class NotebookStandardItem(QtGui.QStandardItem):
 
     def getDirectory(self):
         return self.directory
-    
+
     def getName(self):
         return self.name
-    
+
+    def getNoteVersions(self, note_filename):
+        versions = []
+        for commit in self.git_log:
+            if (commit[2] == note_filename):
+                versions.append(commit[0])
+        return versions
+
+    def incCommitNumber(self):
+        self.commit_number += 1
+        return self.commit_number
+        
     def incNumberUnsaved(self):
         self.number_unsaved += 1
         self.setForeground(QtGui.QBrush(QtGui.QColor(100,0,0)))
@@ -245,7 +258,11 @@ class NotebookStandardItem(QtGui.QStandardItem):
         self.name = xml.find("name").text
         self.setText(self.name)
 
+        self.git_log = misc.gitGetLog(self.directory)
+        if (len(self.git_log) > 0):
+            self.commit_number = int(self.git_log[0][1].split(" ")[1])
 
+            
 class NotebookStandardItemModel(QtGui.QStandardItemModel):
     """
     The notebook listview model.

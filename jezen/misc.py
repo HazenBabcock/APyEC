@@ -35,9 +35,28 @@ def getUserInfo(username, email):
     dialog.exec_()
     return dialog.getUserInfo()
 
+
 @setDirectory
 def gitGetLastCommit(directory):
     return subprocess.check_output(["git", "log", "-1", "--pretty=%B"])
+
+
+@setDirectory
+def gitGetLog(directory):
+    """
+    Parses the output of 'git log --name-only --pretty=%H%n%s' and
+    returns it as [[commit hash, commit message, file changed], [..]].
+    """
+    try:
+        log_text = subprocess.check_output(["git", "log", "--name-only", "--pretty=%H%n%s"]).splitlines()
+    except subprocess.CalledProcessError:
+        return []
+    
+    log = []
+    for i in range(len(log_text)/4):
+        log.append([log_text[4*i], log_text[4*i+1], log_text[4*i+3]])
+    return log
+
     
 @setDirectory
 def gitGetVersion(directory, filename, commit_id):
@@ -51,11 +70,13 @@ def gitGetVersionIDs(directory, filename):
     resp = subprocess.check_output(["git", "rev-list", "--all", "--", filename])
     return resp.splitlines()
 
+
 @setDirectory
 def gitInit(directory, name, email):
     subprocess.call(["git", "init"])
     subprocess.call(["git", "config", "user.name", name])
     subprocess.call(["git", "config", "user.email", email])
+
 
 @setDirectory
 def gitSave(directory, filename, commit):
@@ -73,6 +94,7 @@ def pSaveXML(filename, xml):
         
     with open(filename, "w") as fp:
         fp.write(reparsed.toprettyxml(indent="  ", encoding = "ISO-8859-1"))
+
 
 class UserInfoDialog(QtGui.QDialog):
     """
