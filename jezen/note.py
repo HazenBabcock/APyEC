@@ -45,8 +45,9 @@ class NoteMVC(QtGui.QListView):
         self.note_model.clear()
 
     def handleSelectionChange(self, new_item_selection, old_item_selection):
-        source_index = self.note_proxy_model.mapToSource(self.selectedIndexes()[0])
-        self.selectedNoteChanged.emit(self.note_model.itemFromIndex(source_index))
+        if (len(self.selectedIndexes()) > 0):
+            source_index = self.note_proxy_model.mapToSource(self.selectedIndexes()[0])
+            self.selectedNoteChanged.emit(self.note_model.itemFromIndex(source_index))
 
     def loadNotes(self, notebook):
         """
@@ -109,6 +110,11 @@ class NoteStandardItem(QtGui.QStandardItem):
 
         note_file is path/note_(uuid).xml
         """
+        self.attachments = []
+        self.date = None
+        self.keywords = []
+        self.markdown = None
+        self.name = ""
         self.notebook = notebook
         self.unsaved_markdown = None
         self.versions = []
@@ -117,12 +123,13 @@ class NoteStandardItem(QtGui.QStandardItem):
         if note_file is not None:
             self.fullname = note_file
             self.filename = os.path.basename(self.fullname)
-            xml = ElementTree.parse(self.fullname).getroot()
-            self.markdown = xml.find("markdown").text
-            self.name = xml.find("name").text
 
+            # These are the git SHA-1 keys of the versions. The array
+            # is ordered with the most recent version first.
             self.versions = self.notebook.getNoteVersions(self.filename)
 
+            self.loadNote(0)
+            
         # Create a new note.
         else:
             self.markdown = ""
@@ -161,6 +168,16 @@ class NoteStandardItem(QtGui.QStandardItem):
     def getUnsavedMarkdown(self):
         return self.unsaved_markdown
 
+    def loadNote(self, version_index):
+        xml_text = misc.gitGetVersion(self.notebook.getDirectory(),
+                                      self.filename,
+                                      self.versions[version_index])
+        print xml_text
+        xml = ElementTree.fromstring(xml_text)
+        self.date = xml.find("date").text
+        self.markdown = xml.find("markdown").text
+        self.name = xml.find("name").text
+
     def moveNote(self, new_notebook):
         """
         Notebooks are just directories, so update the filename accordingly.
@@ -169,6 +186,10 @@ class NoteStandardItem(QtGui.QStandardItem):
         """
         self.notebook = new_notebook
         self.filename = self.notebook.getDirectory() + self.uuid
+
+        # FIXME: Need to replay and commit the versions so that the history
+        #        is not lost when switching notebooks.
+        #        We also need to move the attachments.
 
     def saveBackup(self):
         backup_name = self.fullname[:-4] + "_backup.txt"
@@ -201,6 +222,11 @@ class NoteStandardItem(QtGui.QStandardItem):
                      self.filename,
                      "commit " + str(self.notebook.incCommitNumber()))
 
+        # Prepend current version to the list of versions.
+        self.versions = [misc.gitGetLastCommitId(self.notebook.getDirectory())] + self.versions
+
+        QtGui.QStandardItem.__init__(self, self.name + " (" + str(len(self.versions)) +")")
+        
     def setMarkdown(self, new_markdown):
         self.markdown = new_markdown
 

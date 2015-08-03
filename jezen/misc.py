@@ -42,6 +42,14 @@ def gitGetLastCommit(directory):
 
 
 @setDirectory
+def gitGetLastCommitId(directory):
+    """
+    Returns the SHA-1 id of the last commit.
+    """
+    return subprocess.check_output(["git", "log", "-1", "--pretty=%H"]).strip()
+
+
+@setDirectory
 def gitGetLog(directory):
     """
     Parses the output of 'git log --name-only --pretty=%H%n%s' and
@@ -61,6 +69,7 @@ def gitGetLog(directory):
 @setDirectory
 def gitGetVersion(directory, filename, commit_id):
     return subprocess.check_output(["git", "show", commit_id + ":" + filename])
+
 
 @setDirectory
 def gitGetVersionIDs(directory, filename):
