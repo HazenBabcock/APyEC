@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'editor.ui'
 #
-# Created: Sat Aug  1 15:19:45 2015
+# Created: Mon Aug  3 18:42:21 2015
 #      by: PyQt4 UI code generator 4.11.3
 #
 # WARNING! All changes made in this file will be lost!
@@ -26,7 +26,7 @@ except AttributeError:
 class Ui_Form(object):
     def setupUi(self, Form):
         Form.setObjectName(_fromUtf8("Form"))
-        Form.resize(571, 730)
+        Form.resize(586, 726)
         self.verticalLayout = QtGui.QVBoxLayout(Form)
         self.verticalLayout.setObjectName(_fromUtf8("verticalLayout"))
         self.editSplitter = QtGui.QSplitter(Form)
@@ -73,6 +73,9 @@ class Ui_Form(object):
         spacerItem1 = QtGui.QSpacerItem(40, 20, QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Minimum)
         self.horizontalLayout_2.addItem(spacerItem1)
         self.saveButton = QtGui.QPushButton(Form)
+        self.saveButton.setAutoDefault(False)
+        self.saveButton.setDefault(False)
+        self.saveButton.setFlat(False)
         self.saveButton.setObjectName(_fromUtf8("saveButton"))
         self.horizontalLayout_2.addWidget(self.saveButton)
         self.verticalLayout.addLayout(self.horizontalLayout_2)

@@ -24,7 +24,10 @@ class Jezen(QtGui.QMainWindow):
         self.ui = jezenUi.Ui_MainWindow()
         self.ui.setupUi(self)
 
-        self.editor_viewer = editor.EditorViewer(self.ui.viewEditTabWidget)
+        self.viewer = editor.Viewer(self.ui.viewerWidget)
+        layout = QtGui.QHBoxLayout()
+        layout.addWidget(self.viewer)
+        self.ui.viewerWidget.setLayout(layout)
         
         # Load settings
         self.directory = str(self.settings.value("directory", "./").toString())
@@ -38,7 +41,7 @@ class Jezen(QtGui.QMainWindow):
         self.ui.notebookMVC.addNote.connect(self.handleNewNote)
         self.ui.notebookMVC.selectedNotebooksChanged.connect(self.ui.noteMVC.updateNotebookFilter)
         
-        self.ui.noteMVC.selectedNoteChanged.connect(self.editor_viewer.newNote)
+        self.ui.noteMVC.selectedNoteChanged.connect(self.viewer.newNote)
 
         self.loadNotebooks()
 

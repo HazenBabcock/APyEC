@@ -241,7 +241,7 @@ class NotebookStandardItem(QtGui.QStandardItem):
         for commit in self.git_log:
             if (commit[2] == note_filename):
                 versions.append(commit[0])
-        return versions
+        return list(reversed(versions))
 
     def incCommitNumber(self):
         self.commit_number += 1

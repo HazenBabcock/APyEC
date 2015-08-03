@@ -111,6 +111,7 @@ class NoteStandardItem(QtGui.QStandardItem):
         note_file is path/note_(uuid).xml
         """
         self.attachments = []
+        self.cur_version_number = 0
         self.date = None
         self.keywords = []
         self.markdown = None
@@ -128,7 +129,8 @@ class NoteStandardItem(QtGui.QStandardItem):
             # is ordered with the most recent version first.
             self.versions = self.notebook.getNoteVersions(self.filename)
 
-            self.loadNote(0)
+            self.cur_version_number = len(self.versions)-1
+            self.loadNote(self.cur_version_number)
             
         # Create a new note.
         else:
@@ -153,6 +155,9 @@ class NoteStandardItem(QtGui.QStandardItem):
         """
         pass
 
+    def getCurrentVersionNumber(self):
+        return self.cur_version_number
+
     def getMarkdown(self):
         return self.markdown
     
@@ -169,10 +174,10 @@ class NoteStandardItem(QtGui.QStandardItem):
         return self.unsaved_markdown
 
     def loadNote(self, version_index):
+        self.cur_version_number = version_index
         xml_text = misc.gitGetVersion(self.notebook.getDirectory(),
                                       self.filename,
                                       self.versions[version_index])
-        print xml_text
         xml = ElementTree.fromstring(xml_text)
         self.date = xml.find("date").text
         self.markdown = xml.find("markdown").text
@@ -222,8 +227,9 @@ class NoteStandardItem(QtGui.QStandardItem):
                      self.filename,
                      "commit " + str(self.notebook.incCommitNumber()))
 
-        # Prepend current version to the list of versions.
-        self.versions = [misc.gitGetLastCommitId(self.notebook.getDirectory())] + self.versions
+        # append current version to the list of versions.
+        self.versions.append(misc.gitGetLastCommitId(self.notebook.getDirectory()))
+        self.cur_version_number = len(self.versions)-1
 
         QtGui.QStandardItem.__init__(self, self.name + " (" + str(len(self.versions)) +")")
         
