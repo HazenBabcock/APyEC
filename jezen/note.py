@@ -126,7 +126,7 @@ class NoteStandardItem(QtGui.QStandardItem):
             self.filename = os.path.basename(self.fullname)
 
             # These are the git SHA-1 keys of the versions. The array
-            # is ordered with the most recent version first.
+            # is ordered with the most recent version last.
             self.versions = self.notebook.getNoteVersions(self.filename)
 
             self.cur_version_number = len(self.versions)-1
@@ -173,6 +173,9 @@ class NoteStandardItem(QtGui.QStandardItem):
     def getUnsavedMarkdown(self):
         return self.unsaved_markdown
 
+    def isLatestVersion(self):
+        return (self.cur_version_number == (self.getNumberOfVersions() - 1))
+        
     def loadNote(self, version_index):
         self.cur_version_number = version_index
         xml_text = misc.gitGetVersion(self.notebook.getDirectory(),
@@ -231,7 +234,7 @@ class NoteStandardItem(QtGui.QStandardItem):
         self.versions.append(misc.gitGetLastCommitId(self.notebook.getDirectory()))
         self.cur_version_number = len(self.versions)-1
 
-        QtGui.QStandardItem.__init__(self, self.name + " (" + str(len(self.versions)) +")")
+        self.setText(self.name + " (" + str(len(self.versions)) +")")
         
     def setMarkdown(self, new_markdown):
         self.markdown = new_markdown

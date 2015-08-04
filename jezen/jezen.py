@@ -24,14 +24,19 @@ class Jezen(QtGui.QMainWindow):
         self.ui = jezenUi.Ui_MainWindow()
         self.ui.setupUi(self)
 
-        self.viewer = editor.Viewer(self.ui.viewerWidget)
+        self.viewer = editor.Viewer(self.ui.noteGroupBox)
         layout = QtGui.QHBoxLayout()
         layout.addWidget(self.viewer)
-        self.ui.viewerWidget.setLayout(layout)
-        
+        self.ui.noteGroupBox.setLayout(layout)
+
         # Load settings
         self.directory = str(self.settings.value("directory", "./").toString())
-        
+
+        # Restore geometry
+        self.restoreGeometry(self.settings.value("main_window").toByteArray())
+        self.ui.mainSplitter.restoreState(self.settings.value("main_splitter").toByteArray())
+        self.ui.notebookSplitter.restoreState(self.settings.value("notebook_splitter").toByteArray())
+            
         # Connect signals
         self.ui.actionNew_Note.triggered.connect(self.handleNewNote)
         self.ui.actionNew_Notebook.triggered.connect(self.handleNewNotebook)
@@ -42,6 +47,8 @@ class Jezen(QtGui.QMainWindow):
         self.ui.notebookMVC.selectedNotebooksChanged.connect(self.ui.noteMVC.updateNotebookFilter)
         
         self.ui.noteMVC.selectedNoteChanged.connect(self.viewer.newNote)
+
+        self.viewer.editNote.connect(self.handleEditNote)
 
         self.loadNotebooks()
 
@@ -55,12 +62,30 @@ class Jezen(QtGui.QMainWindow):
             
     def closeEvent(self, event):
         self.settings.setValue("directory", self.directory)
+        self.settings.setValue("main_window", self.saveGeometry())
+        self.settings.setValue("main_splitter", self.ui.mainSplitter.saveState())
+        self.settings.setValue("notebook_splitter", self.ui.notebookSplitter.saveState())
 
     def handleChangeIdentity(self, boolean):
         [self.username, self.email] = misc.getUserInfo(self.username, self.email)
         self.settings.setValue("username", self.username)
         self.settings.setValue("email", self.email)
-        
+
+    def handleEditNote(self, a_note):
+        ok = True
+        if not a_note.isLatestVersion():
+            reply = QtGui.QMessageBox.warning(self,
+                                              'Warning',
+                                              'This is not the latest version of this note, edit anyway?',
+                                              QtGui.QMessageBox.Yes, QtGui.QMessageBox.No)
+            if (reply == QtGui.QMessageBox.Yes):
+                ok = True
+            else:
+                ok = False
+        if ok:
+            tmp = editor.Editor(a_note, self)
+            tmp.show()
+                       
     def handleNewNote(self, nb):
         [name, ok] = QtGui.QInputDialog.getText(self,
                                                 'New Note',

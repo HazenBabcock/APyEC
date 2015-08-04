@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'viewer.ui'
 #
-# Created: Mon Aug  3 18:22:26 2015
+# Created: Mon Aug  3 20:45:56 2015
 #      by: PyQt4 UI code generator 4.11.3
 #
 # WARNING! All changes made in this file will be lost!
@@ -26,7 +26,7 @@ except AttributeError:
 class Ui_Form(object):
     def setupUi(self, Form):
         Form.setObjectName(_fromUtf8("Form"))
-        Form.resize(639, 733)
+        Form.resize(288, 322)
         self.verticalLayout = QtGui.QVBoxLayout(Form)
         self.verticalLayout.setObjectName(_fromUtf8("verticalLayout"))
         self.webViewWidget = QtGui.QWidget(Form)
