@@ -69,6 +69,7 @@ class Viewer(QtGui.QWidget):
     Handles interaction with a viewer form.
     """
     editNote = QtCore.pyqtSignal(object)
+    noteLinkClicked = QtCore.pyqtSignal(str, int)
     
     def __init__(self, parent = None):
         QtGui.QWidget.__init__(self, parent)
@@ -78,6 +79,7 @@ class Viewer(QtGui.QWidget):
         self.ui.setupUi(self)
         
         self.web_viewer = QtWebKit.QWebView(self)
+        self.web_viewer.page().setLinkDelegationPolicy(QtWebKit.QWebPage.DelegateAllLinks)
 
         layout = QtGui.QHBoxLayout()
         layout.addWidget(self.web_viewer)
@@ -85,12 +87,19 @@ class Viewer(QtGui.QWidget):
 
         self.ui.editPushButton.clicked.connect(self.handleEditButton)
         self.ui.versionComboBox.currentIndexChanged.connect(self.handleVersionChange)
+        self.web_viewer.linkClicked.connect(self.handleLinkClicked)
 
         self.ui.versionWidget.hide()
 
     def handleEditButton(self):
         self.editNote.emit(self.note)
-        
+
+    def handleLinkClicked(self, url):
+        url_string = url.toString()
+        if (url_string[:4] == "note"):
+            [note_name, note_version] = url.toString().split("&v=")
+            self.noteLinkClicked.emit(note_name, int(note_version))
+
     def handleVersionChange(self, new_index):
         self.note.loadNote(new_index)
         self.updateWebView(self.note.getMarkdown())
@@ -114,6 +123,13 @@ class Viewer(QtGui.QWidget):
         self.ui.versionWidget.show()
 
     def updateWebView(self, mdown):
-        self.web_viewer.setHtml(markdown.markdown(mdown))
+
+        html = markdown.markdown(mdown)
+
+        # Update to references to point to the correct attachments.
+        
+        
+        # Display.
+        self.web_viewer.setHtml(html)
 
     

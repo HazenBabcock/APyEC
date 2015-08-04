@@ -49,6 +49,7 @@ class Jezen(QtGui.QMainWindow):
         self.ui.noteMVC.selectedNoteChanged.connect(self.viewer.newNote)
 
         self.viewer.editNote.connect(self.handleEditNote)
+        self.viewer.noteLinkClicked.connect(self.ui.noteMVC.handleNoteLinkClicked)
 
         self.loadNotebooks()
 

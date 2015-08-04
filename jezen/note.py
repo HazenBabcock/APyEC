@@ -24,7 +24,22 @@ class NoteMVC(QtGui.QListView):
 
     def __init__(self, parent = None):
         QtGui.QListView.__init__(self, parent)
+        self.notes = {}
+        self.right_clicked = None
 
+        # Context menu
+        self.copyLinkAction = QtGui.QAction(self.tr("Copy Link to Clipboard"), self)
+        self.copyLinkAction.triggered.connect(self.handleCopyLink)
+        self.copyNoteAction = QtGui.QAction(self.tr("Copy Note"), self)
+        self.copyNoteAction.triggered.connect(self.handleCopyNote)
+        self.deleteNoteAction = QtGui.QAction(self.tr("Delete Note"), self)
+        self.deleteNoteAction.triggered.connect(self.handleDeleteNote)
+
+        self.popup_menu = QtGui.QMenu(self)
+        self.popup_menu.addAction(self.copyLinkAction)
+        self.popup_menu.addAction(self.copyNoteAction)
+        self.popup_menu.addAction(self.deleteNoteAction)
+        
         # Note model
         self.note_model = NoteStandardItemModel()
         self.note_proxy_model = NoteSortFilterProxyModel()
@@ -38,37 +53,72 @@ class NoteMVC(QtGui.QListView):
         """
         Add a new blank note.
         """
-        self.note_model.appendRow(NoteStandardItem(notebook, note_name = name))
+        a_note = NoteStandardItem(notebook, note_name = name)
+        self.notes[a_note.getFileName()] = a_note
+        self.note_model.appendRow(a_note)
         self.note_proxy_model.sort(0)
 
     def clearNotes(self):
         self.note_model.clear()
 
+    def handleCopyLink(self, boolean):
+        clipboard = QtGui.QApplication.clipboard()
+        a_note = self.noteFromProxyIndex(self.right_clicked)
+        clipboard.setText("[" + a_note.getName() + "](" + a_note.getLink() + ")")
+
+    def handleCopyNote(self, boolean):
+        pass
+
+    def handleDeleteNote(self, boolean):
+        pass
+
+    def handleNoteLinkClicked(self, note_filename, note_version):
+        note_filename = str(note_filename)
+        print note_filename, type(note_filename)
+        if note_filename in self.notes:
+            a_note = self.notes[note_filename]
+            a_note.loadNote(note_version)
+            source_index = self.note_model.indexFromItem(a_note)
+            filter_index = self.note_proxy_model.mapFromSource(source_index)
+            if filter_index.isValid():
+                self.setCurrentIndex(filter_index)
+            else:
+                self.clearSelection()
+                self.selectedNoteChanged.emit(a_note)
+        
     def handleSelectionChange(self, new_item_selection, old_item_selection):
         if (len(self.selectedIndexes()) > 0):
-            source_index = self.note_proxy_model.mapToSource(self.selectedIndexes()[0])
-            self.selectedNoteChanged.emit(self.note_model.itemFromIndex(source_index))
+            self.selectedNoteChanged.emit(self.noteFromProxyIndex(self.selectedIndexes()[0]))
 
     def loadNotes(self, notebook):
         """
         Loads all the notes in a notebook.
         """
         for n_file in glob.glob(notebook.getDirectory() + "note_*.xml"):
-            self.note_model.appendRow(NoteStandardItem(notebook, note_file = n_file))
+            a_note = NoteStandardItem(notebook, note_file = n_file)
+            self.notes[a_note.getFileName()] = a_note
+            self.note_model.appendRow(a_note)
 
+        for key in self.notes:
+            print key, type(key)
+            
         self.note_proxy_model.sort(0)
 
+    def noteFromProxyIndex(self, proxy_index):
+        source_index = self.note_proxy_model.mapToSource(proxy_index)
+        return self.note_model.itemFromIndex(source_index)
+        
     def updateNotebookFilter(self, notebooks):
         self.note_proxy_model.setNotebooks(notebooks)
         self.note_proxy_model.sort(0)
         
-#    def mousePressEvent(self, event):
-#        if (event.button() == QtCore.Qt.RightButton):
-#            self.right_clicked = self.indexAt(event.pos())
-#            if (self.right_clicked.row() > -1):
-#                self.popup_menu.exec_(event.globalPos())
-#        else:
-#            QtGui.QListView.mousePressEvent(self, event)
+    def mousePressEvent(self, event):
+        if (event.button() == QtCore.Qt.RightButton):
+            self.right_clicked = self.indexAt(event.pos())
+            if (self.right_clicked.row() > -1):
+                self.popup_menu.exec_(event.globalPos())
+        else:
+            QtGui.QListView.mousePressEvent(self, event)
 
 
 class NoteSortFilterProxyModel(QtGui.QSortFilterProxyModel):
@@ -158,6 +208,15 @@ class NoteStandardItem(QtGui.QStandardItem):
     def getCurrentVersionNumber(self):
         return self.cur_version_number
 
+    def getFileName(self):
+        return self.filename
+
+    def getLink(self):
+        """
+        This returns a link to the current latest version of the note
+        """
+        return self.filename + "&v=" + str(self.getNumberOfVersions() - 1)
+        
     def getMarkdown(self):
         return self.markdown
     

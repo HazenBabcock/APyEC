@@ -139,6 +139,8 @@ class NotebookMVC(QtGui.QListView):
         return selected_notebooks
 
     def handleAddNote(self, boolean):
+
+        # FIXME: Add single method to get notebook from proxy index.
         source_index = self.notebook_proxy_model.mapToSource(self.right_clicked)
         self.addNote.emit(self.notebook_model.itemFromIndex(source_index))
 
