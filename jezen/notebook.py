@@ -202,7 +202,6 @@ class NotebookStandardItem(QtGui.QStandardItem):
         """
         QtGui.QStandardItem.__init__(self, "NA")
 
-        self.commit_number = -1
         self.directory = directory + "nb_"
         self.git_log = []
         self.name = None
@@ -245,10 +244,6 @@ class NotebookStandardItem(QtGui.QStandardItem):
                 versions.append(commit[0])
         return list(reversed(versions))
 
-    def incCommitNumber(self):
-        self.commit_number += 1
-        return self.commit_number
-        
     def incNumberUnsaved(self):
         self.number_unsaved += 1
         self.setForeground(QtGui.QBrush(QtGui.QColor(100,0,0)))
@@ -261,8 +256,6 @@ class NotebookStandardItem(QtGui.QStandardItem):
         self.setText(self.name)
 
         self.git_log = misc.gitGetLog(self.directory)
-        if (len(self.git_log) > 0):
-            self.commit_number = int(self.git_log[0][1].split(" ")[1])
 
             
 class NotebookStandardItemModel(QtGui.QStandardItemModel):

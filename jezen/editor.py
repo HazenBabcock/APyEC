@@ -5,8 +5,6 @@
 """
 
 import markdown
-import os
-import uuid
 
 from PyQt4 import QtCore, QtGui, QtWebKit
 
@@ -15,7 +13,7 @@ import viewer_ui as viewerUi
 
 #
 # FIXME:
-#  Maybe someone else has already written something better than this?
+#  Maybe someone else has already written a better editor (and viewer) than this?
 #
 
 class Editor(QtGui.QDialog):
@@ -33,6 +31,8 @@ class Editor(QtGui.QDialog):
         self.ui = editorUi.Ui_Dialog()
         self.ui.setupUi(self)
 
+        self.ui.attachmentsMVC.newNote(self.note)
+        
         self.setWindowFlags(QtCore.Qt.Window)
         
         self.ui.noteTextEdit.setText(self.note.getMarkdown())
@@ -42,6 +42,7 @@ class Editor(QtGui.QDialog):
         layout.addWidget(self.viewer)
         self.ui.noteGroupBox.setLayout(layout)
 
+        self.ui.attachUploadButton.clicked.connect(self.handleAttachUpload)
         self.ui.closeButton.clicked.connect(self.close)
         self.ui.noteTextEdit.textChanged.connect(self.handleTextChanged)
         self.ui.saveButton.clicked.connect(self.handleSave)
@@ -52,7 +53,15 @@ class Editor(QtGui.QDialog):
     def getMarkdown(self):
         return str(self.ui.noteTextEdit.toPlainText())
 
-    # FIXME: Need to check if the note has changed to reduce spurious commits.
+    def handleAttachUpload(self, boolean):
+        upload_filename = QtGui.QFileDialog.getOpenFileName(self,
+                                                            "Upload File",
+                                                            ".",
+                                                            "*")
+        if upload_filename:
+            self.ui.attachmentsMVC.addAttachment(str(upload_filename))
+        
+    # FIXME: Need to check if the note has changed to reduce spurious commits?
     def handleSave(self):
         self.note.setMarkdown(unicode(self.ui.noteTextEdit.toPlainText()))
         self.note.saveNote()

@@ -74,7 +74,6 @@ class NoteMVC(QtGui.QListView):
 
     def handleNoteLinkClicked(self, note_filename, note_version):
         note_filename = str(note_filename)
-        print note_filename, type(note_filename)
         if note_filename in self.notes:
             a_note = self.notes[note_filename]
             a_note.loadNote(note_version)
@@ -99,9 +98,6 @@ class NoteMVC(QtGui.QListView):
             self.notes[a_note.getFileName()] = a_note
             self.note_model.appendRow(a_note)
 
-        for key in self.notes:
-            print key, type(key)
-            
         self.note_proxy_model.sort(0)
 
     def noteFromProxyIndex(self, proxy_index):
@@ -191,6 +187,9 @@ class NoteStandardItem(QtGui.QStandardItem):
             
         QtGui.QStandardItem.__init__(self, self.name + " (" + str(len(self.versions)) +")")
 
+    def addAttachment(self, attachment_fullname):
+        self.attachments.append(attachment_fullname)
+        
     def copyNote(self, notebook):
         """
         Return a copy with a different uuid and possibly a different notebook.
@@ -205,6 +204,9 @@ class NoteStandardItem(QtGui.QStandardItem):
         """
         pass
 
+    def getAttachments(self):
+        return self.attachments
+        
     def getCurrentVersionNumber(self):
         return self.cur_version_number
 
@@ -245,6 +247,11 @@ class NoteStandardItem(QtGui.QStandardItem):
         self.markdown = xml.find("markdown").text
         self.name = xml.find("name").text
 
+        attach_xml = xml.find("attachments")
+        if attach_xml is not None:
+            for xml in attach_xml:
+                self.attachments.append(xml.text)
+
     def moveNote(self, new_notebook):
         """
         Notebooks are just directories, so update the filename accordingly.
@@ -280,6 +287,18 @@ class NoteStandardItem(QtGui.QStandardItem):
         markdown_xml = ElementTree.SubElement(xml, "markdown")
         markdown_xml.text = self.markdown
 
+        if (len(self.attachments) > 0):
+            attachments_xml = ElementTree.SubElement(xml, "attachments")
+            for attached in self.attachments:
+                file_xml = ElementTree.SubElement(attachments_xml, "file")
+                file_xml.text = attached
+
+        if (len(self.keywords) > 0):
+            keywords_xml = ElementTree.SubElement(xml, "keywords")
+            for word in self.keywords:
+                word_xml = ElementTree.SubElement(keywords_xml, "word")
+                word_xml.text = word
+
         misc.pSaveXML(self.fullname, xml)
 
         # Delete backup.
@@ -287,7 +306,7 @@ class NoteStandardItem(QtGui.QStandardItem):
         # git commit.
         misc.gitSave(self.notebook.getDirectory(),
                      self.filename,
-                     "commit " + str(self.notebook.incCommitNumber()))
+                     "update " + self.name)
 
         # append current version to the list of versions.
         self.versions.append(misc.gitGetLastCommitId(self.notebook.getDirectory()))
