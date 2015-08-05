@@ -41,6 +41,7 @@ class Editor(QtGui.QDialog):
         layout = QtGui.QHBoxLayout()
         layout.addWidget(self.viewer)
         self.ui.noteGroupBox.setLayout(layout)
+        self.viewer.newNoteEdit(note)
 
         self.ui.attachUploadButton.clicked.connect(self.handleAttachUpload)
         self.ui.closeButton.clicked.connect(self.close)
@@ -82,6 +83,7 @@ class Viewer(QtGui.QWidget):
     
     def __init__(self, parent = None):
         QtGui.QWidget.__init__(self, parent)
+        self.base_url = None
         self.note = None
 
         self.ui = viewerUi.Ui_Form()
@@ -108,6 +110,9 @@ class Viewer(QtGui.QWidget):
         if (url_string[:4] == "note"):
             [note_name, note_version] = url.toString().split("&v=")
             self.noteLinkClicked.emit(note_name, int(note_version))
+        else:
+            print url_string
+            self.web_viewer.load(url)
 
     def handleVersionChange(self, new_index):
         self.note.loadNote(new_index)
@@ -115,7 +120,8 @@ class Viewer(QtGui.QWidget):
 
     def newNote(self, new_note):
         self.note = new_note
-
+        self.base_url = QtCore.QUrl.fromLocalFile(self.note.getNotebook().getDirectory() + "notebook.xml")
+        
         # Update markdown.
         self.updateWebView(self.note.getMarkdown())
 
@@ -131,14 +137,16 @@ class Viewer(QtGui.QWidget):
         # Show combo box and edit button (if they are hidden).
         self.ui.versionWidget.show()
 
+    def newNoteEdit(self, new_note):
+        self.base_url = QtCore.QUrl.fromLocalFile(new_note.getNotebook().getDirectory() + "notebook.xml")
+
     def updateWebView(self, mdown):
 
         html = markdown.markdown(mdown)
 
         # Update to references to point to the correct attachments.
         
-        
         # Display.
-        self.web_viewer.setHtml(html)
+        self.web_viewer.setHtml(html, self.base_url)
 
     

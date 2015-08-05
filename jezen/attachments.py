@@ -20,25 +20,52 @@ class AttachmentsMVC(QtGui.QListView):
         QtGui.QListView.__init__(self, parent)
         self.directory = None
         self.note = None
+        self.right_clicked = None
 
-        self.attach_model = QtGui.QStandardItemModel()
-        self.setModel(self.attach_model)
+        # Context menu
+        self.copyLinkAction = QtGui.QAction(self.tr("Copy Link to Clipboard"), self)
+        self.copyLinkAction.triggered.connect(self.handleCopyLink)
+        self.deleteAttachmentAction = QtGui.QAction(self.tr("Delete Attachment"), self)
+        self.deleteAttachmentAction.triggered.connect(self.handleDeleteAttachment)
+
+        self.popup_menu = QtGui.QMenu(self)
+        self.popup_menu.addAction(self.copyLinkAction)
+
+        # Attachments model
+        self.attachment_model = QtGui.QStandardItemModel()
+        self.setModel(self.attachment_model)
 
     def addAttachment(self, a_file):
         an_attachment = AttachmentsStandardItem()
         an_attachment.createWithFile(self.directory, a_file)
-        self.attach_model.appendRow(an_attachment)
+        self.attachment_model.appendRow(an_attachment)
         self.note.addAttachment(an_attachment.getFullname())
         self.note.saveNote()
 
+    def handleCopyLink(self, boolean):
+        clipboard = QtGui.QApplication.clipboard()
+        an_attachment = self.attachment_model.itemFromIndex(self.right_clicked)
+        clipboard.setText("[" + an_attachment.getFilename() + "](" + an_attachment.getFullname() + ")")
+
+    def handleDeleteAttachment(self, boolean):
+        pass
+
+    def mousePressEvent(self, event):
+        if (event.button() == QtCore.Qt.RightButton):
+            self.right_clicked = self.indexAt(event.pos())
+            if (self.right_clicked.row() > -1):
+                self.popup_menu.exec_(event.globalPos())
+        else:
+            QtGui.QListView.mousePressEvent(self, event)
+            
     def newNote(self, a_note):
         self.note = a_note
         self.directory = self.note.getNotebook().getDirectory()
-        self.attach_model.clear()
+        self.attachment_model.clear()
         for fullname in self.note.getAttachments():
             an_attachment = AttachmentsStandardItem()
             an_attachment.createWithFullname(self.directory, fullname)
-            self.attach_model.appendRow(an_attachment)
+            self.attachment_model.appendRow(an_attachment)
 
 
 class AttachmentsStandardItem(QtGui.QStandardItem):
@@ -76,6 +103,11 @@ class AttachmentsStandardItem(QtGui.QStandardItem):
                      self.fullname,
                      "attachment " + self.filename)
 
+    def getFilename(self):
+        return self.filename
+
     def getFullname(self):
         return self.fullname
 
+    def getUrl(self):
+        return self.directory + self.fullname
