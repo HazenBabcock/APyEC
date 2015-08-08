@@ -61,6 +61,10 @@ class NoteMVC(QtGui.QListView):
     def clearNotes(self):
         self.note_model.clear()
 
+#    def handleClicked(self, proxy_index):
+#        if (proxy_index.row() == self.selectedIndexes()[0].row()):
+#            print "clicked", proxy_index.row(), self.selectedIndexes()[0].row()
+        
     def handleCopyLink(self, boolean):
         clipboard = QtGui.QApplication.clipboard()
         a_note = self.noteFromProxyIndex(self.right_clicked)
@@ -114,7 +118,12 @@ class NoteMVC(QtGui.QListView):
             if (self.right_clicked.row() > -1):
                 self.popup_menu.exec_(event.globalPos())
         else:
-            QtGui.QListView.mousePressEvent(self, event)
+            # This is so that the user can force updates of the display of a note.
+            proxy_index = self.indexAt(event.pos())
+            if (len(self.selectedIndexes()) > 0) and (proxy_index == self.selectedIndexes()[0]):
+                self.selectedNoteChanged.emit(self.noteFromProxyIndex(proxy_index))
+            else:
+                QtGui.QListView.mousePressEvent(self, event)
 
 
 class NoteSortFilterProxyModel(QtGui.QSortFilterProxyModel):
