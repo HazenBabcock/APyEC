@@ -80,7 +80,7 @@
         </property>
         <layout class="QVBoxLayout" name="verticalLayout_3">
          <item>
-          <widget class="QListView" name="keywordsListView">
+          <widget class="KeywordChooserMVC" name="keywordChooserMVC">
            <property name="sizePolicy">
             <sizepolicy hsizetype="Preferred" vsizetype="Expanding">
              <horstretch>0</horstretch>
@@ -216,6 +216,11 @@
    <class>NoteMVC</class>
    <extends>QListView</extends>
    <header>note</header>
+  </customwidget>
+  <customwidget>
+   <class>KeywordChooserMVC</class>
+   <extends>QListView</extends>
+   <header>keywords</header>
   </customwidget>
  </customwidgets>
  <resources/>

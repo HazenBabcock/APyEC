@@ -112,8 +112,8 @@ class NotebookMVC(QtGui.QListView):
         self.popup_menu.addAction(self.deleteAction)
 
         # Notebook model
-        self.notebook_model = NotebookStandardItemModel()
-        self.notebook_proxy_model = NotebookSortFilterProxyModel()
+        self.notebook_model = NotebookStandardItemModel(self)
+        self.notebook_proxy_model = NotebookSortFilterProxyModel(self)
         self.notebook_proxy_model.setSourceModel(self.notebook_model)
         self.setModel(self.notebook_proxy_model)
 

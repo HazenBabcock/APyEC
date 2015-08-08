@@ -126,7 +126,7 @@
         </property>
         <layout class="QVBoxLayout" name="verticalLayout">
          <item>
-          <widget class="QListView" name="listView">
+          <widget class="KeywordEditorMVC" name="keywordEditorMVC">
            <property name="sizePolicy">
             <sizepolicy hsizetype="Expanding" vsizetype="MinimumExpanding">
              <horstretch>0</horstretch>
@@ -138,10 +138,10 @@
          <item>
           <layout class="QHBoxLayout" name="horizontalLayout_3">
            <item>
-            <widget class="QLineEdit" name="lineEdit"/>
+            <widget class="QLineEdit" name="keywordLineEdit"/>
            </item>
            <item>
-            <widget class="QPushButton" name="pushButton">
+            <widget class="QPushButton" name="keywordAddPushButton">
              <property name="text">
               <string>Add</string>
              </property>
@@ -217,6 +217,11 @@
    <class>AttachmentsMVC</class>
    <extends>QListView</extends>
    <header>attachments</header>
+  </customwidget>
+  <customwidget>
+   <class>KeywordEditorMVC</class>
+   <extends>QListView</extends>
+   <header>keywords</header>
   </customwidget>
  </customwidgets>
  <resources/>

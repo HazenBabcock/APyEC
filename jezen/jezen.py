@@ -46,9 +46,10 @@ class Jezen(QtGui.QMainWindow):
         self.ui.actionSet_Directory.triggered.connect(self.handleSetDirectory)
         self.ui.actionQuit.triggered.connect(self.handleQuit)
 
+        self.ui.keywordChooserMVC.selectedKeywordsChanged.connect(self.ui.noteMVC.updateKeywordFilter)
         self.ui.notebookMVC.addNote.connect(self.handleNewNote)
         self.ui.notebookMVC.selectedNotebooksChanged.connect(self.ui.noteMVC.updateNotebookFilter)
-        
+        self.ui.noteMVC.noteKeywordsChanged.connect(self.ui.keywordChooserMVC.updateKeywords)
         self.ui.noteMVC.selectedNoteChanged.connect(self.viewer.newNoteView)
 
         self.viewer.editNote.connect(self.handleEditNote)

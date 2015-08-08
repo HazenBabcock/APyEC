@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'jezen.ui'
 #
-# Created: Mon Aug  3 21:26:18 2015
+# Created: Sat Aug  8 15:11:06 2015
 #      by: PyQt4 UI code generator 4.11.3
 #
 # WARNING! All changes made in this file will be lost!
@@ -76,14 +76,14 @@ class Ui_MainWindow(object):
         self.keywordGroupBox.setObjectName(_fromUtf8("keywordGroupBox"))
         self.verticalLayout_3 = QtGui.QVBoxLayout(self.keywordGroupBox)
         self.verticalLayout_3.setObjectName(_fromUtf8("verticalLayout_3"))
-        self.keywordsListView = QtGui.QListView(self.keywordGroupBox)
+        self.keywordChooserMVC = KeywordChooserMVC(self.keywordGroupBox)
         sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Preferred, QtGui.QSizePolicy.Expanding)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
-        sizePolicy.setHeightForWidth(self.keywordsListView.sizePolicy().hasHeightForWidth())
-        self.keywordsListView.setSizePolicy(sizePolicy)
-        self.keywordsListView.setObjectName(_fromUtf8("keywordsListView"))
-        self.verticalLayout_3.addWidget(self.keywordsListView)
+        sizePolicy.setHeightForWidth(self.keywordChooserMVC.sizePolicy().hasHeightForWidth())
+        self.keywordChooserMVC.setSizePolicy(sizePolicy)
+        self.keywordChooserMVC.setObjectName(_fromUtf8("keywordChooserMVC"))
+        self.verticalLayout_3.addWidget(self.keywordChooserMVC)
         self.notesGroupBox = QtGui.QGroupBox(self.mainSplitter)
         sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Preferred, QtGui.QSizePolicy.Preferred)
         sizePolicy.setHorizontalStretch(0)
@@ -166,4 +166,5 @@ class Ui_MainWindow(object):
         self.actionPrint_Note.setText(_translate("MainWindow", "Print Note", None))
 
 from note import NoteMVC
+from keywords import KeywordChooserMVC
 from notebook import NotebookMVC

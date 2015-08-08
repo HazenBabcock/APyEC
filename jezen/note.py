@@ -22,6 +22,7 @@ class NoteMVC(QtGui.QListView):
     """
     Encapsulates a list view specialized for notes and it's associated model.
     """
+    noteKeywordsChanged = QtCore.pyqtSignal(list, list)
     selectedNoteChanged = QtCore.pyqtSignal(object)
 
     @logger.logFn    
@@ -44,8 +45,8 @@ class NoteMVC(QtGui.QListView):
         self.popup_menu.addAction(self.deleteNoteAction)
         
         # Note model
-        self.note_model = NoteStandardItemModel()
-        self.note_proxy_model = NoteSortFilterProxyModel()
+        self.note_model = NoteStandardItemModel(self)
+        self.note_proxy_model = NoteSortFilterProxyModel(self)
         self.note_proxy_model.setSourceModel(self.note_model)
         self.setModel(self.note_proxy_model)
 
@@ -57,7 +58,7 @@ class NoteMVC(QtGui.QListView):
         """
         Add a new blank note.
         """
-        a_note = NoteStandardItem(notebook, note_name = name)
+        a_note = NoteStandardItem(notebook, self.noteKeywordsChanged, note_name = name)
         self.notes[a_note.getFileName()] = a_note
         self.note_model.appendRow(a_note)
         self.note_proxy_model.sort(0)
@@ -105,7 +106,7 @@ class NoteMVC(QtGui.QListView):
         Loads all the notes in a notebook.
         """
         for n_file in glob.glob(notebook.getDirectory() + "note_*.xml"):
-            a_note = NoteStandardItem(notebook, note_file = n_file)
+            a_note = NoteStandardItem(notebook, self.noteKeywordsChanged, note_file = n_file)
             self.notes[a_note.getFileName()] = a_note
             self.note_model.appendRow(a_note)
 
@@ -117,9 +118,14 @@ class NoteMVC(QtGui.QListView):
         return self.note_model.itemFromIndex(source_index)
 
     @logger.logFn    
+    def updateKeywordFilter(self, keywords):
+        self.note_proxy_model.setKeywords(keywords)
+        self.note_proxy_model.sort(0)
+
+    @logger.logFn    
     def updateNotebookFilter(self, notebooks):
         self.note_proxy_model.setNotebooks(notebooks)
-        self.note_proxy_model.sort(0)
+        self.note_proxy_model.sort(0)        
 
     @logger.logFn        
     def mousePressEvent(self, event):
@@ -152,11 +158,23 @@ class NoteSortFilterProxyModel(QtGui.QSortFilterProxyModel):
         index = self.sourceModel().index(source_row, 0, source_parent)
         note = self.sourceModel().itemFromIndex(index)
         accept = False
+
+        # Check notebooks.
         if (note.getNotebook() in self.notebooks):
             accept = True
 
+        # Check keywords. An empty keyword list is equivalent to no selection.
+        if accept:
+            if (len(self.keywords) > 0):
+                accept = any(x in self.keywords for x in note.getKeywords())
+
         return accept
 
+    @logger.logFn    
+    def setKeywords(self, new_keywords):
+        self.keywords = new_keywords
+        self.invalidateFilter()
+        
     @logger.logFn    
     def setNotebooks(self, new_notebooks):
         self.notebooks = new_notebooks
@@ -169,8 +187,19 @@ class NoteStandardItem(QtGui.QStandardItem):
 
     This class also handles loading and saving notes.
     """
-    @logger.logFn    
-    def __init__(self, notebook, note_file = None, note_name = None):
+
+    #
+    # FIXME:
+    #  It might be a better idea if this created and handed out some sort of note
+    #  object? Otherwise it seems like things could get messy with this open in
+    #  both a viewer and an editor with an uncertain underlying state. Maybe it
+    #  sufficient to just make sure that there is only ever one view of this item?
+    #
+    #  Keyword addition and subtraction could also get complicated fast.
+    #
+    
+    @logger.logFn
+    def __init__(self, notebook, keywords_changed_signal, note_file = None, note_name = None):
         """
         Load on old note (when given a note_file), or create a
         new note (when given a name).
@@ -186,9 +215,11 @@ class NoteStandardItem(QtGui.QStandardItem):
         self.date = None
         self.html_converter = markdown.markdown
         self.keywords = []
+        self.keywords_changed_signal = keywords_changed_signal
         self.markdown = None
         self.name = ""
         self.notebook = notebook
+        self.old_keywords = []
         self.unsaved_markdown = None
         self.versions = []
         
@@ -260,6 +291,10 @@ class NoteStandardItem(QtGui.QStandardItem):
     def getHTMLConverter(self):
         return self.html_converter
 
+    @logger.logFn
+    def getKeywords(self):
+        return self.keywords
+        
     @logger.logFn    
     def getLink(self):
         """
@@ -287,7 +322,7 @@ class NoteStandardItem(QtGui.QStandardItem):
     def isLatestVersion(self):
         return (self.cur_version_number == (self.getNumberOfVersions() - 1))
 
-    @logger.logFn    
+    @logger.logFn
     def loadNote(self, version_index):
 
         # Handle newly created notes.
@@ -301,7 +336,7 @@ class NoteStandardItem(QtGui.QStandardItem):
         xml = ElementTree.fromstring(xml_text)
         self.date = xml.find("date").text
         self.content = xml.find("content").text
-        self.content = xml.find("content_type").text
+        self.content_type = xml.find("content_type").text
         self.name = xml.find("name").text
 
         attach_xml = xml.find("attachments")
@@ -309,10 +344,15 @@ class NoteStandardItem(QtGui.QStandardItem):
             for xml in attach_xml:
                 self.attachments.append(xml.text)
 
-        keyword_xml = xml.find("keyword")
+        keyword_xml = xml.find("keywords")
         if keyword_xml is not None:
             for xml in keyword_xml:
                 self.keywords.append(xml.text)
+
+        # Check if the keywords have changed.
+        if (set(self.old_keywords) != set(self.keywords)):
+            self.keywords_changed_signal.emit(self.old_keywords, self.keywords)
+            self.old_keywords = self.keywords
 
     @logger.logFn                
     def moveNote(self, new_notebook):
@@ -364,7 +404,7 @@ class NoteStandardItem(QtGui.QStandardItem):
         content_xml = ElementTree.SubElement(xml, "content")
         content_xml.text = self.content
 
-        content_type_xml = ElementTree.SubElement(xml, "content")
+        content_type_xml = ElementTree.SubElement(xml, "content_type")
         content_type_xml.text = self.content_type
 
         misc.pSaveXML(self.fullname, xml)
@@ -376,16 +416,26 @@ class NoteStandardItem(QtGui.QStandardItem):
                           self.filename,
                           "update " + self.name)
 
-        # append current version to the list of versions.
+        # Append current version to the list of versions.
         self.versions.append(misc.gitGetLastCommitId(self.notebook.getDirectory()))
         self.cur_version_number = len(self.versions)-1
 
         self.setText(self.name + " (" + str(len(self.versions)) +")")
 
+        # Check if the keywords have changed.
+        print "o", self.old_keywords, "n", self.keywords
+        if (set(self.old_keywords) != set(self.keywords)):
+            self.keywords_changed_signal.emit(self.old_keywords, self.keywords)
+            self.old_keywords = self.keywords
+
     @logger.logFn        
     def setContent(self, new_content):
         self.content = new_content
 
+    @logger.logFn
+    def setKeywords(self, new_keywords):
+        self.keywords = new_keywords
+        
     @logger.logFn        
     def setUnsavedContent(self, new_content):
         self.unsaved_content = new_content

@@ -35,7 +35,7 @@ class Editor(QtGui.QDialog):
         self.update_timer = QtCore.QTimer(self)
         self.update_timer.setInterval(200)
         self.update_timer.setSingleShot(True)
-        
+
         self.ui = editorUi.Ui_Dialog()
         self.ui.setupUi(self)
 
@@ -44,6 +44,7 @@ class Editor(QtGui.QDialog):
         
         self.ui.attachmentsMVC.newNote(self.note)        
         self.ui.noteTextEdit.setText(self.note.getContent())
+        self.ui.keywordEditorMVC.addKeywords(self.note.getKeywords())
 
         # Restore Geometry.
         self.restoreGeometry(self.settings.value("edit_dialog").toByteArray())
@@ -60,6 +61,7 @@ class Editor(QtGui.QDialog):
         # Connect signals.
         self.ui.attachUploadButton.clicked.connect(self.handleAttachUpload)
         self.ui.closeButton.clicked.connect(self.close)
+        self.ui.keywordAddPushButton.clicked.connect(self.handleKeywordAdd)
         self.ui.noteTextEdit.textChanged.connect(self.handleTextChanged)
         self.ui.saveButton.clicked.connect(self.handleSave)
         self.update_timer.timeout.connect(self.handleUpdateTimer)
@@ -85,11 +87,18 @@ class Editor(QtGui.QDialog):
             upload_filename = str(upload_filename)
             self.attach_directory = os.path.dirname(upload_filename)
             self.ui.attachmentsMVC.addAttachment(upload_filename)
-        
+
+    @logger.logFn
+    def handleKeywordAdd(self, boolean):
+        keyword_text = str(self.ui.keywordLineEdit.text())
+        if (len(keyword_text) > 0):
+            self.ui.keywordEditorMVC.addKeyword(keyword_text)
+                         
     # FIXME: Need to check if the note has changed to reduce spurious commits?
-    @logger.logFn    
+    @logger.logFn
     def handleSave(self, boolean):
         self.note.setContent(unicode(self.ui.noteTextEdit.toPlainText()))
+        self.note.setKeywords(self.ui.keywordEditorMVC.getAllKeywords())
         self.note.saveNote()
 
     @logger.logFn        

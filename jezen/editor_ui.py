@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'editor.ui'
 #
-# Created: Sat Aug  8 08:26:08 2015
+# Created: Sat Aug  8 15:58:27 2015
 #      by: PyQt4 UI code generator 4.11.3
 #
 # WARNING! All changes made in this file will be lost!
@@ -97,22 +97,22 @@ class Ui_Dialog(object):
         self.keywordEditGroupBox.setObjectName(_fromUtf8("keywordEditGroupBox"))
         self.verticalLayout = QtGui.QVBoxLayout(self.keywordEditGroupBox)
         self.verticalLayout.setObjectName(_fromUtf8("verticalLayout"))
-        self.listView = QtGui.QListView(self.keywordEditGroupBox)
+        self.keywordEditorMVC = KeywordEditorMVC(self.keywordEditGroupBox)
         sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.MinimumExpanding)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
-        sizePolicy.setHeightForWidth(self.listView.sizePolicy().hasHeightForWidth())
-        self.listView.setSizePolicy(sizePolicy)
-        self.listView.setObjectName(_fromUtf8("listView"))
-        self.verticalLayout.addWidget(self.listView)
+        sizePolicy.setHeightForWidth(self.keywordEditorMVC.sizePolicy().hasHeightForWidth())
+        self.keywordEditorMVC.setSizePolicy(sizePolicy)
+        self.keywordEditorMVC.setObjectName(_fromUtf8("keywordEditorMVC"))
+        self.verticalLayout.addWidget(self.keywordEditorMVC)
         self.horizontalLayout_3 = QtGui.QHBoxLayout()
         self.horizontalLayout_3.setObjectName(_fromUtf8("horizontalLayout_3"))
-        self.lineEdit = QtGui.QLineEdit(self.keywordEditGroupBox)
-        self.lineEdit.setObjectName(_fromUtf8("lineEdit"))
-        self.horizontalLayout_3.addWidget(self.lineEdit)
-        self.pushButton = QtGui.QPushButton(self.keywordEditGroupBox)
-        self.pushButton.setObjectName(_fromUtf8("pushButton"))
-        self.horizontalLayout_3.addWidget(self.pushButton)
+        self.keywordLineEdit = QtGui.QLineEdit(self.keywordEditGroupBox)
+        self.keywordLineEdit.setObjectName(_fromUtf8("keywordLineEdit"))
+        self.horizontalLayout_3.addWidget(self.keywordLineEdit)
+        self.keywordAddPushButton = QtGui.QPushButton(self.keywordEditGroupBox)
+        self.keywordAddPushButton.setObjectName(_fromUtf8("keywordAddPushButton"))
+        self.horizontalLayout_3.addWidget(self.keywordAddPushButton)
         self.verticalLayout.addLayout(self.horizontalLayout_3)
         self.verticalLayout_2.addWidget(self.viewEditSplitter)
         self.horizontalLayout_2 = QtGui.QHBoxLayout()
@@ -151,8 +151,9 @@ class Ui_Dialog(object):
         self.attachmentsGroupBox.setTitle(_translate("Dialog", "Attachments", None))
         self.attachUploadButton.setText(_translate("Dialog", "Upload", None))
         self.keywordEditGroupBox.setTitle(_translate("Dialog", "Keywords", None))
-        self.pushButton.setText(_translate("Dialog", "Add", None))
+        self.keywordAddPushButton.setText(_translate("Dialog", "Add", None))
         self.saveButton.setText(_translate("Dialog", "Save", None))
         self.closeButton.setText(_translate("Dialog", "Close", None))
 
+from keywords import KeywordEditorMVC
 from attachments import AttachmentsMVC
