@@ -26,3 +26,8 @@
 13. Merge conflict resolution editor.
 
 14. Rich text editor option that allows pictures and other docs inline?
+
+15. Can edit keywords in the list view.
+
+16. Keyword auto-completer.
+
