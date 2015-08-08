@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'editor.ui'
 #
-# Created: Sat Aug  8 07:54:31 2015
+# Created: Sat Aug  8 08:26:08 2015
 #      by: PyQt4 UI code generator 4.11.3
 #
 # WARNING! All changes made in this file will be lost!
@@ -147,7 +147,7 @@ class Ui_Dialog(object):
     def retranslateUi(self, Dialog):
         Dialog.setWindowTitle(_translate("Dialog", "Jezen Note Editor", None))
         self.noteGroupBox.setTitle(_translate("Dialog", "Note", None))
-        self.markdownGroupBox.setTitle(_translate("Dialog", "Markdown", None))
+        self.markdownGroupBox.setTitle(_translate("Dialog", "Content", None))
         self.attachmentsGroupBox.setTitle(_translate("Dialog", "Attachments", None))
         self.attachUploadButton.setText(_translate("Dialog", "Upload", None))
         self.keywordEditGroupBox.setTitle(_translate("Dialog", "Keywords", None))

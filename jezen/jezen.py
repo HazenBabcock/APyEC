@@ -8,6 +8,7 @@ from PyQt4 import QtCore, QtGui
 import jezen_ui as jezenUi
 
 import editor
+import logger
 import misc
 import notebook
 
@@ -20,6 +21,8 @@ class Jezen(QtGui.QMainWindow):
         self.settings = QtCore.QSettings("jezen", "jezen")
         self.username = ""
 
+        logger.startLogging("./logs/")
+            
         # Load UI
         self.ui = jezenUi.Ui_MainWindow()
         self.ui.setupUi(self)
@@ -46,7 +49,7 @@ class Jezen(QtGui.QMainWindow):
         self.ui.notebookMVC.addNote.connect(self.handleNewNote)
         self.ui.notebookMVC.selectedNotebooksChanged.connect(self.ui.noteMVC.updateNotebookFilter)
         
-        self.ui.noteMVC.selectedNoteChanged.connect(self.viewer.newNote)
+        self.ui.noteMVC.selectedNoteChanged.connect(self.viewer.newNoteView)
 
         self.viewer.editNote.connect(self.handleEditNote)
         self.viewer.noteLinkClicked.connect(self.ui.noteMVC.handleNoteLinkClicked)
@@ -60,18 +63,21 @@ class Jezen(QtGui.QMainWindow):
         else:
             self.username = str(self.settings.value("username", None).toString())
             self.email = str(self.settings.value("email", None).toString())
-            
+
+    @logger.logFn
     def closeEvent(self, event):
         self.settings.setValue("directory", self.directory)
         self.settings.setValue("main_window", self.saveGeometry())
         self.settings.setValue("main_splitter", self.ui.mainSplitter.saveState())
         self.settings.setValue("notebook_splitter", self.ui.notebookSplitter.saveState())
 
+    @logger.logFn        
     def handleChangeIdentity(self, boolean):
         [self.username, self.email] = misc.getUserInfo(self.username, self.email)
         self.settings.setValue("username", self.username)
         self.settings.setValue("email", self.email)
 
+    @logger.logFn        
     def handleEditNote(self, a_note):
         ok = True
         if not a_note.isLatestVersion():
@@ -86,7 +92,8 @@ class Jezen(QtGui.QMainWindow):
         if ok:
             tmp = editor.Editor(a_note, self)
             tmp.show()
-                       
+
+    @logger.logFn            
     def handleNewNote(self, nb):
         [name, ok] = QtGui.QInputDialog.getText(self,
                                                 'New Note',
@@ -97,13 +104,15 @@ class Jezen(QtGui.QMainWindow):
             if nb is not None:
                 self.ui.noteMVC.addNote(nb, str(name))
         
+    @logger.logFn
     def handleNewNotebook(self, boolean):
         [notebook_name, ok] = QtGui.QInputDialog.getText(self,
                                                          'New Notebook',
                                                          'Enter the notebooks name:')        
         if ok:
             self.ui.notebookMVC.addNotebook(self.directory, str(notebook_name), self.username, self.email)
-        
+
+    @logger.logFn            
     def handleSetDirectory(self, boolean):
         directory = str(QtGui.QFileDialog.getExistingDirectory(self,
                                                                "New Directory",
@@ -116,10 +125,12 @@ class Jezen(QtGui.QMainWindow):
             self.directory = directory
             self.ui.noteMVC.clearNotes()
             self.loadNotebooks()
-        
-    def handleQuit(self):
+
+    @logger.logFn
+    def handleQuit(self, boolean):
         self.close()
 
+    @logger.logFn        
     def loadNotebooks(self):
         self.ui.notebookMVC.loadNotebooks(self.directory)
         for nb in self.ui.notebookMVC.getAllNotebooks():

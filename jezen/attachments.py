@@ -10,12 +10,14 @@ import uuid
 
 from PyQt4 import QtCore, QtGui, QtWebKit
 
+import logger
 import misc
 
 class AttachmentsMVC(QtGui.QListView):
     """
     Encapsulates a list view specialized for attachments.
     """
+    @logger.logFn    
     def __init__(self, parent = None):
         QtGui.QListView.__init__(self, parent)
         self.directory = None
@@ -35,6 +37,7 @@ class AttachmentsMVC(QtGui.QListView):
         self.attachment_model = QtGui.QStandardItemModel()
         self.setModel(self.attachment_model)
 
+    @logger.logFn        
     def addAttachment(self, a_file):
         an_attachment = AttachmentsStandardItem()
         an_attachment.createWithFile(self.directory, a_file)
@@ -42,14 +45,17 @@ class AttachmentsMVC(QtGui.QListView):
         self.note.addAttachment(an_attachment.getFullname())
         self.note.saveNote()
 
+    @logger.logFn        
     def handleCopyLink(self, boolean):
         clipboard = QtGui.QApplication.clipboard()
         an_attachment = self.attachment_model.itemFromIndex(self.right_clicked)
         clipboard.setText("[" + an_attachment.getFilename() + "](" + an_attachment.getFullname() + ")")
 
+    @logger.logFn        
     def handleDeleteAttachment(self, boolean):
         pass
 
+    @logger.logFn    
     def mousePressEvent(self, event):
         if (event.button() == QtCore.Qt.RightButton):
             self.right_clicked = self.indexAt(event.pos())
@@ -57,7 +63,8 @@ class AttachmentsMVC(QtGui.QListView):
                 self.popup_menu.exec_(event.globalPos())
         else:
             QtGui.QListView.mousePressEvent(self, event)
-            
+
+    @logger.logFn            
     def newNote(self, a_note):
         self.note = a_note
         self.directory = self.note.getNotebook().getDirectory()
@@ -72,12 +79,14 @@ class AttachmentsStandardItem(QtGui.QStandardItem):
     """
     A single attachment in the attachment listview model.
     """
+    @logger.logFn    
     def __init__(self):
         QtGui.QStandardItem.__init__(self, "NA")
         self.directory = None  # The notebooks directory.
         self.filename = None   # The attachment file name.
         self.fullname = None   # The attachment file name including the path from self.directory.
 
+    @logger.logFn        
     def createWithFullname(self, directory, fullname):
         """
         This is called to load notes that already exist.
@@ -87,6 +96,7 @@ class AttachmentsStandardItem(QtGui.QStandardItem):
         self.fullname = fullname
         self.setText(self.filename)
 
+    @logger.logFn        
     def createWithFile(self, directory, a_file):
         """
         This is called to create a new attachment from a file.
@@ -99,15 +109,18 @@ class AttachmentsStandardItem(QtGui.QStandardItem):
         shutil.copy(a_file, self.directory + self.fullname)
         self.setText(self.filename)
 
-        misc.gitSave(directory,
-                     self.fullname,
-                     "attachment " + self.filename)
+        misc.gitAddCommit(directory,
+                          self.fullname,
+                          "attachment " + self.filename)
 
+    @logger.logFn        
     def getFilename(self):
         return self.filename
 
+    @logger.logFn    
     def getFullname(self):
         return self.fullname
 
+    @logger.logFn    
     def getUrl(self):
         return self.directory + self.fullname

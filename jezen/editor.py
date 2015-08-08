@@ -4,13 +4,14 @@
    :synopsis: The editor (and viewer) for notes.
 """
 
-import markdown
 import os
 
 from PyQt4 import QtCore, QtGui, QtWebKit
 
 import editor_ui as editorUi
 import viewer_ui as viewerUi
+
+import logger
 
 #
 # FIXME:
@@ -21,6 +22,7 @@ class Editor(QtGui.QDialog):
     """
     Handles interaction with the ui.editTab
     """
+    @logger.logFn    
     def __init__(self, note, parent = None):
         QtGui.QDialog.__init__(self, parent)
         self.note = note
@@ -30,7 +32,7 @@ class Editor(QtGui.QDialog):
         
         # Note editting timer, to reduce the number of update
         # events when the user is typing.
-        self.update_timer = QtCore.QTimer()
+        self.update_timer = QtCore.QTimer(self)
         self.update_timer.setInterval(200)
         self.update_timer.setSingleShot(True)
         
@@ -41,7 +43,7 @@ class Editor(QtGui.QDialog):
         self.setWindowFlags(QtCore.Qt.Window)
         
         self.ui.attachmentsMVC.newNote(self.note)        
-        self.ui.noteTextEdit.setText(self.note.getMarkdown())
+        self.ui.noteTextEdit.setText(self.note.getContent())
 
         # Restore Geometry.
         self.restoreGeometry(self.settings.value("edit_dialog").toByteArray())
@@ -62,17 +64,18 @@ class Editor(QtGui.QDialog):
         self.ui.saveButton.clicked.connect(self.handleSave)
         self.update_timer.timeout.connect(self.handleUpdateTimer)
 
-        self.handleUpdateTimer()
-
+    @logger.logFn        
     def closeEvent(self, event):
         self.settings.setValue("edit_dialog", self.saveGeometry())
         self.settings.setValue("edit_splitter", self.ui.editSplitter.saveState())
         self.settings.setValue("keyword_splitter", self.ui.keywordSplitter.saveState())
         self.settings.setValue("view_edit_splitter", self.ui.viewEditSplitter.saveState())
 
-    def getMarkdown(self):
+    @logger.logFn        
+    def getContent(self):
         return str(self.ui.noteTextEdit.toPlainText())
 
+    @logger.logFn    
     def handleAttachUpload(self, boolean):
         upload_filename = QtGui.QFileDialog.getOpenFileName(self,
                                                             "Upload File",
@@ -84,13 +87,16 @@ class Editor(QtGui.QDialog):
             self.ui.attachmentsMVC.addAttachment(upload_filename)
         
     # FIXME: Need to check if the note has changed to reduce spurious commits?
-    def handleSave(self):
-        self.note.setMarkdown(unicode(self.ui.noteTextEdit.toPlainText()))
+    @logger.logFn    
+    def handleSave(self, boolean):
+        self.note.setContent(unicode(self.ui.noteTextEdit.toPlainText()))
         self.note.saveNote()
 
+    @logger.logFn        
     def handleTextChanged(self):
         self.update_timer.start()
-        
+
+    @logger.logFn        
     def handleUpdateTimer(self):
         self.viewer.updateWebView(unicode(self.ui.noteTextEdit.toPlainText()))
 
@@ -101,7 +107,8 @@ class Viewer(QtGui.QWidget):
     """
     editNote = QtCore.pyqtSignal(object)
     noteLinkClicked = QtCore.pyqtSignal(str, int)
-    
+
+    @logger.logFn    
     def __init__(self, parent = None):
         QtGui.QWidget.__init__(self, parent)
         self.base_url = None
@@ -123,9 +130,11 @@ class Viewer(QtGui.QWidget):
 
         self.ui.versionWidget.hide()
 
-    def handleEditButton(self):
+    @logger.logFn        
+    def handleEditButton(self, boolean):
         self.editNote.emit(self.note)
 
+    @logger.logFn        
     def handleLinkClicked(self, url):
         url_string = url.toString()
         if (url_string[:4] == "note"):
@@ -135,16 +144,21 @@ class Viewer(QtGui.QWidget):
             print url_string
             self.web_viewer.load(url)
 
+    @logger.logFn            
     def handleVersionChange(self, new_index):
         self.note.loadNote(new_index)
-        self.updateWebView(self.note.getMarkdown())
+        self.updateWebView(self.note.getContent())
 
-    def newNote(self, new_note):
+    @logger.logFn
+    def newNoteView(self, new_note):
+        """
+        Called when used directly as a viewer.
+        """
         self.note = new_note
         self.base_url = QtCore.QUrl.fromLocalFile(self.note.getNotebook().getDirectory() + "notebook.xml")
         
         # Update markdown.
-        self.updateWebView(self.note.getMarkdown())
+        self.updateWebView(self.note.getContent())
 
         # Fill in version combo box.
         self.ui.versionComboBox.currentIndexChanged.disconnect()
@@ -158,14 +172,17 @@ class Viewer(QtGui.QWidget):
         # Show combo box and edit button (if they are hidden).
         self.ui.versionWidget.show()
 
+    @logger.logFn        
     def newNoteEdit(self, new_note):
-        self.base_url = QtCore.QUrl.fromLocalFile(new_note.getNotebook().getDirectory() + "notebook.xml")
+        """
+        Called when used to display a note in edit mode.
+        """
+        self.note = new_note
+        self.base_url = QtCore.QUrl.fromLocalFile(self.note.getNotebook().getDirectory() + "notebook.xml")
 
-    def updateWebView(self, mdown):
-
-        html = markdown.markdown(mdown)
-
-        # Update to references to point to the correct attachments.
+    @logger.logFn        
+    def updateWebView(self, content):
+        html = self.note.getHTMLConverter()(content)
         
         # Display.
         self.web_viewer.setHtml(html, self.base_url)

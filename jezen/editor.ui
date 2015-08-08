@@ -42,7 +42,7 @@
         </sizepolicy>
        </property>
        <property name="title">
-        <string>Markdown</string>
+        <string>Content</string>
        </property>
        <layout class="QVBoxLayout" name="verticalLayout_5">
         <item>

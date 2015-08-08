@@ -16,6 +16,8 @@ from PyQt4 import QtCore, QtGui
 
 import userinfo_ui as userInfoUi
 
+import logger
+
 #
 # Decorators
 #
@@ -30,17 +32,31 @@ def setDirectory(fn):
 #
 # Functions & Classes
 #
+@logger.logFn
 def getUserInfo(username, email):
     dialog = UserInfoDialog(username, email)
     dialog.exec_()
     return dialog.getUserInfo()
 
 
+@logger.logFn
+@setDirectory
+def gitAddCommit(directory, files, commit):
+    if isinstance(files, list):
+        for f in files:
+            subprocess.call(["git", "add", f])
+    else:
+        subprocess.call(["git", "add", files])        
+    subprocess.call(["git", "commit", "-m", commit])
+
+    
+@logger.logFn
 @setDirectory
 def gitGetLastCommit(directory):
     return subprocess.check_output(["git", "log", "-1", "--pretty=%B"])
 
 
+@logger.logFn
 @setDirectory
 def gitGetLastCommitId(directory):
     """
@@ -49,6 +65,7 @@ def gitGetLastCommitId(directory):
     return subprocess.check_output(["git", "log", "-1", "--pretty=%H"]).strip()
 
 
+@logger.logFn
 @setDirectory
 def gitGetLog(directory):
     """
@@ -65,12 +82,14 @@ def gitGetLog(directory):
         log.append([log_text[4*i], log_text[4*i+1], log_text[4*i+3]])
     return log
 
-    
+
+@logger.logFn
 @setDirectory
 def gitGetVersion(directory, filename, commit_id):
     return subprocess.check_output(["git", "show", commit_id + ":" + filename])
 
 
+@logger.logFn
 @setDirectory
 def gitGetVersionIDs(directory, filename):
     """
@@ -80,6 +99,7 @@ def gitGetVersionIDs(directory, filename):
     return resp.splitlines()
 
 
+@logger.logFn
 @setDirectory
 def gitInit(directory, name, email):
     subprocess.call(["git", "init"])
@@ -87,12 +107,7 @@ def gitInit(directory, name, email):
     subprocess.call(["git", "config", "user.email", email])
 
 
-@setDirectory
-def gitSave(directory, filename, commit):
-    subprocess.call(["git", "add", filename])
-    subprocess.call(["git", "commit", "-m", commit])
-
-    
+@logger.logFn    
 def pSaveXML(filename, xml):
     """
     Save XML to a file in a 'pretty' format.
@@ -109,6 +124,7 @@ class UserInfoDialog(QtGui.QDialog):
     """
     Dialog for getting (or changing) the username and email address used by git.
     """
+    @logger.logFn
     def __init__(self, username, email, parent = None):
         QtGui.QDialog.__init__(self, parent)
 
@@ -119,10 +135,12 @@ class UserInfoDialog(QtGui.QDialog):
         self.ui.usernameLineEdit.setText(username)
         self.ui.emailLineEdit.setText(email)
 
+    @logger.logFn
     def closeEvent(self, event):
         if (len(self.ui.usernameLineEdit.text()) == 0) or (len(self.ui.emailLineEdit.text()) == 0):
             event.ignore()
 
+    @logger.logFn            
     def getUserInfo(self):
         return [self.ui.usernameLineEdit.text(),
                 self.ui.emailLineEdit.text()]
