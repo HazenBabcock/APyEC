@@ -30,4 +30,3 @@
 15. Can edit keywords in the list view.
 
 16. Keyword auto-completer.
-
