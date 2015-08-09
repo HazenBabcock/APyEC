@@ -22,10 +22,11 @@ class Editor(QtGui.QDialog):
     """
     Handles interaction with the ui.editTab
     """
-    @logger.logFn    
-    def __init__(self, note, parent = None):
+    @logger.logFn
+    def __init__(self, note, note_content, parent = None):
         QtGui.QDialog.__init__(self, parent)
         self.note = note
+        self.note_content = note_content
         self.settings = QtCore.QSettings("jezen", "jezen")
 
         self.attach_directory = str(self.settings.value("attach_directory", ".").toString())
@@ -42,9 +43,9 @@ class Editor(QtGui.QDialog):
         # This lets the edit window go behind the main window.
         self.setWindowFlags(QtCore.Qt.Window)
         
-        self.ui.attachmentsMVC.newNote(self.note)        
-        self.ui.noteTextEdit.setText(self.note.getContent())
-        self.ui.keywordEditorMVC.addKeywords(self.note.getKeywords())
+        self.ui.attachmentsMVC.newNote(self.note, self.note_content)
+        self.ui.noteTextEdit.setText(self.note_content.getContent())
+        self.ui.keywordEditorMVC.addKeywords(self.note_content.getKeywords())
 
         # Restore Geometry.
         self.restoreGeometry(self.settings.value("edit_dialog").toByteArray())
@@ -56,7 +57,7 @@ class Editor(QtGui.QDialog):
         layout = QtGui.QHBoxLayout()
         layout.addWidget(self.viewer)
         self.ui.noteGroupBox.setLayout(layout)
-        self.viewer.newNoteEdit(note)
+        self.viewer.newNoteEdit(note, note_content)
 
         # Connect signals.
         self.ui.attachUploadButton.clicked.connect(self.handleAttachUpload)
@@ -72,6 +73,7 @@ class Editor(QtGui.QDialog):
         self.settings.setValue("edit_splitter", self.ui.editSplitter.saveState())
         self.settings.setValue("keyword_splitter", self.ui.keywordSplitter.saveState())
         self.settings.setValue("view_edit_splitter", self.ui.viewEditSplitter.saveState())
+
 
     @logger.logFn        
     def getContent(self):
@@ -97,9 +99,9 @@ class Editor(QtGui.QDialog):
     # FIXME: Need to check if the note has changed to reduce spurious commits?
     @logger.logFn
     def handleSave(self, boolean):
-        self.note.setContent(unicode(self.ui.noteTextEdit.toPlainText()))
-        self.note.setKeywords(self.ui.keywordEditorMVC.getAllKeywords())
-        self.note.saveNote()
+        self.note_content.setContent(unicode(self.ui.noteTextEdit.toPlainText()))
+        self.note_content.setKeywords(self.ui.keywordEditorMVC.getAllKeywords())
+        self.note.saveNote(self.note_content)
 
     @logger.logFn        
     def handleTextChanged(self):
@@ -114,7 +116,7 @@ class Viewer(QtGui.QWidget):
     """
     Handles interaction with a viewer form.
     """
-    editNote = QtCore.pyqtSignal(object)
+    editNote = QtCore.pyqtSignal(object, object)
     noteLinkClicked = QtCore.pyqtSignal(str, int)
 
     @logger.logFn    
@@ -122,6 +124,7 @@ class Viewer(QtGui.QWidget):
         QtGui.QWidget.__init__(self, parent)
         self.base_url = None
         self.note = None
+        self.note_content = None
 
         self.ui = viewerUi.Ui_Form()
         self.ui.setupUi(self)
@@ -141,7 +144,7 @@ class Viewer(QtGui.QWidget):
 
     @logger.logFn        
     def handleEditButton(self, boolean):
-        self.editNote.emit(self.note)
+        self.editNote.emit(self.note, self.note_content)
 
     @logger.logFn        
     def handleLinkClicked(self, url):
@@ -153,10 +156,10 @@ class Viewer(QtGui.QWidget):
             print url_string
             self.web_viewer.load(url)
 
-    @logger.logFn            
+    @logger.logFn
     def handleVersionChange(self, new_index):
-        self.note.loadNote(new_index)
-        self.updateWebView(self.note.getContent())
+        self.note_content = self.note.loadNoteContent(new_index)
+        self.updateWebView(self.note_content.getContent())
 
     @logger.logFn
     def newNoteView(self, new_note):
@@ -166,32 +169,38 @@ class Viewer(QtGui.QWidget):
         self.note = new_note
         self.base_url = QtCore.QUrl.fromLocalFile(self.note.getNotebook().getDirectory() + "notebook.xml")
         
-        # Update markdown.
-        self.updateWebView(self.note.getContent())
+        # Update content.
+        n_versions = self.note.getNumberOfVersions()
+        self.note_content = self.note.loadNoteContent(n_versions - 1)
+        self.updateWebView(self.note_content.getContent())
 
         # Fill in version combo box.
-        self.ui.versionComboBox.currentIndexChanged.disconnect()
-        n_versions = self.note.getNumberOfVersions()
-        self.ui.versionComboBox.clear()
-        for i in range(n_versions):
-            self.ui.versionComboBox.addItem(str(i+1))
-        self.ui.versionComboBox.setCurrentIndex(self.note.getCurrentVersionNumber())
-        self.ui.versionComboBox.currentIndexChanged.connect(self.handleVersionChange)
+        if (n_versions > 0):
+            self.ui.versionComboBox.currentIndexChanged.disconnect()
+            self.ui.versionComboBox.clear()
+            for i in range(n_versions):
+                self.ui.versionComboBox.addItem(str(i+1))
+            self.ui.versionComboBox.setCurrentIndex(self.note_content.getVersionNumber())
+            self.ui.versionComboBox.currentIndexChanged.connect(self.handleVersionChange)
+            self.ui.versionComboBox.show()
+        else:
+            self.ui.versionComboBox.hide()
             
         # Show combo box and edit button (if they are hidden).
         self.ui.versionWidget.show()
 
-    @logger.logFn        
-    def newNoteEdit(self, new_note):
+    @logger.logFn
+    def newNoteEdit(self, new_note, note_content):
         """
         Called when used to display a note in edit mode.
         """
         self.note = new_note
+        self.note_content = note_content
         self.base_url = QtCore.QUrl.fromLocalFile(self.note.getNotebook().getDirectory() + "notebook.xml")
 
     @logger.logFn        
     def updateWebView(self, content):
-        html = self.note.getHTMLConverter()(content)
+        html = self.note_content.convertToHTML(content)
         
         # Display.
         self.web_viewer.setHtml(html, self.base_url)

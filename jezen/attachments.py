@@ -22,6 +22,7 @@ class AttachmentsMVC(QtGui.QListView):
         QtGui.QListView.__init__(self, parent)
         self.directory = None
         self.note = None
+        self.note_content = None
         self.right_clicked = None
 
         # Context menu
@@ -42,8 +43,8 @@ class AttachmentsMVC(QtGui.QListView):
         an_attachment = AttachmentsStandardItem()
         an_attachment.createWithFile(self.directory, a_file)
         self.attachment_model.appendRow(an_attachment)
-        self.note.addAttachment(an_attachment.getFullname())
-        self.note.saveNote()
+        self.note_content.addAttachment(an_attachment.getFullname())
+        self.note.saveNote(self.note_content)
 
     @logger.logFn        
     def handleCopyLink(self, boolean):
@@ -64,12 +65,13 @@ class AttachmentsMVC(QtGui.QListView):
         else:
             QtGui.QListView.mousePressEvent(self, event)
 
-    @logger.logFn            
-    def newNote(self, a_note):
+    @logger.logFn
+    def newNote(self, a_note, note_content):
         self.note = a_note
+        self.note_content = note_content
         self.directory = self.note.getNotebook().getDirectory()
         self.attachment_model.clear()
-        for fullname in self.note.getAttachments():
+        for fullname in self.note_content.getAttachments():
             an_attachment = AttachmentsStandardItem()
             an_attachment.createWithFullname(self.directory, fullname)
             self.attachment_model.appendRow(an_attachment)

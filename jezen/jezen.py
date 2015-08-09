@@ -78,10 +78,10 @@ class Jezen(QtGui.QMainWindow):
         self.settings.setValue("username", self.username)
         self.settings.setValue("email", self.email)
 
-    @logger.logFn        
-    def handleEditNote(self, a_note):
+    @logger.logFn
+    def handleEditNote(self, a_note, note_content):
         ok = True
-        if not a_note.isLatestVersion():
+        if not a_note.isLatestVersion(note_content):
             reply = QtGui.QMessageBox.warning(self,
                                               'Warning',
                                               'This is not the latest version of this note, edit anyway?',
@@ -91,7 +91,7 @@ class Jezen(QtGui.QMainWindow):
             else:
                 ok = False
         if ok:
-            tmp = editor.Editor(a_note, self)
+            tmp = editor.Editor(a_note, note_content, self)
             tmp.show()
 
     @logger.logFn            

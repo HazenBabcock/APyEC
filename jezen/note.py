@@ -18,6 +18,131 @@ import logger
 import misc
 
 
+class NoteContent(object):
+    """
+    The content, keywords, attachments, etc.. of a single version of a single note.
+    """
+    @logger.logFn
+    def __init__(self, note, version_number, xml = None):
+        """
+        Creates a blank note and fills in the fields from the xml if it is provided.
+        """
+        self.attachments = []
+        self.content = ""
+        self.content_type = "markdown"
+        self.date = None
+        self.html_converter = markdown.markdown
+        self.keywords = []
+        self.note = note
+        self.unsaved_content = None
+        self.version_number = version_number
+
+        if xml is not None:
+            self.date = xml.find("date").text
+            self.content = xml.find("content").text
+            self.content_type = xml.find("content_type").text
+            self.name = xml.find("name").text
+
+            attach_xml = xml.find("attachments")
+            if attach_xml is not None:
+                for xml in attach_xml:
+                    self.attachments.append(xml.text)
+
+            keyword_xml = xml.find("keywords")
+            if keyword_xml is not None:
+                for xml in keyword_xml:
+                    self.keywords.append(xml.text)
+
+    @logger.logFn        
+    def addAttachment(self, attachment_fullname):
+        self.attachments.append(attachment_fullname)
+                    
+    @logger.logFn
+    def contentToXML(self, xml):
+        """
+        Add the note contents to the xml.
+        """
+        name_xml = ElementTree.SubElement(xml, "name")
+        name_xml.text = self.name
+
+        date_xml = ElementTree.SubElement(xml, "date")
+        date_xml.text = str(datetime.datetime.now())
+        
+        if (len(self.attachments) > 0):
+            attachments_xml = ElementTree.SubElement(xml, "attachments")
+            for attached in self.attachments:
+                file_xml = ElementTree.SubElement(attachments_xml, "file")
+                file_xml.text = attached
+
+        if (len(self.keywords) > 0):
+            keywords_xml = ElementTree.SubElement(xml, "keywords")
+            for word in self.keywords:
+                word_xml = ElementTree.SubElement(keywords_xml, "word")
+                word_xml.text = word
+
+        content_xml = ElementTree.SubElement(xml, "content")
+        content_xml.text = self.content
+
+        content_type_xml = ElementTree.SubElement(xml, "content_type")
+        content_type_xml.text = self.content_type
+
+        # Delete backup..
+
+    @logger.logFn    
+    def convertToHTML(self, content):
+        return self.html_converter(content)
+
+    @logger.logFn    
+    def getAttachments(self):
+        return self.attachments
+
+    @logger.logFn    
+    def getContent(self):
+        return self.content
+
+    @logger.logFn    
+    def getContentType(self):
+        return self.content_type
+
+    @logger.logFn
+    def getKeywords(self):
+        return self.keywords
+
+    @logger.logFn    
+    def getName(self):
+        return self.name
+    
+    @logger.logFn
+    def getNoteStandardItem(self):
+        return self.note
+
+    @logger.logFn    
+    def getUnsavedContent(self):
+        return self.unsaved_content
+    
+    @logger.logFn    
+    def getVersionNumber(self):
+        return self.version_number    
+
+    @logger.logFn        
+    def saveBackup(self):
+        backup_name = self.note.getFullname()[:-4] + "_backup.txt"
+        with open(backup_name, "w") as fp:
+            fp.write(self.content)
+
+    @logger.logFn        
+    def setContent(self, new_content):
+        self.content = new_content
+
+    @logger.logFn
+    def setKeywords(self, new_keywords):
+        self.keywords = new_keywords
+        
+    @logger.logFn        
+    def setUnsavedContent(self, new_content):
+        self.unsaved_content = new_content
+        
+
 class NoteMVC(QtGui.QListView):
     """
     Encapsulates a list view specialized for notes and it's associated model.
@@ -86,7 +211,6 @@ class NoteMVC(QtGui.QListView):
         note_filename = str(note_filename)
         if note_filename in self.notes:
             a_note = self.notes[note_filename]
-            a_note.loadNote(note_version)
             source_index = self.note_model.indexFromItem(a_note)
             filter_index = self.note_proxy_model.mapFromSource(source_index)
             if filter_index.isValid():
@@ -208,19 +332,12 @@ class NoteStandardItem(QtGui.QStandardItem):
 
         note_file is path/note_(uuid).xml
         """
-        self.attachments = []
-        self.content = ""
-        self.content_type = "markdown"
-        self.cur_version_number = -1
-        self.date = None
-        self.html_converter = markdown.markdown
-        self.keywords = []
+        self.filname = ""
+        self.fullname = ""
         self.keywords_changed_signal = keywords_changed_signal
-        self.markdown = None
         self.name = ""
         self.notebook = notebook
         self.old_keywords = []
-        self.unsaved_markdown = None
         self.versions = []
         
         # Load an old note.
@@ -232,8 +349,8 @@ class NoteStandardItem(QtGui.QStandardItem):
             # is ordered with the most recent version last.
             self.versions = self.notebook.getNoteVersions(self.filename)
 
-            self.cur_version_number = len(self.versions)-1
-            self.loadNote(self.cur_version_number)
+            note_content = self.loadNoteContent(len(self.versions) - 1)
+            self.name = note_content.getName()
             
         # Create a new note.
         else:
@@ -243,16 +360,19 @@ class NoteStandardItem(QtGui.QStandardItem):
             
         QtGui.QStandardItem.__init__(self, self.name + " (" + str(len(self.versions)) +")")
 
-    @logger.logFn        
-    def addAttachment(self, attachment_fullname):
-        self.attachments.append(attachment_fullname)
-
+    @logger.logFn
+    def checkKeywords(self, note_content):
+        new_keywords = list(note_content.getKeywords())
+        if (set(self.old_keywords) != set(new_keywords)):
+            self.keywords_changed_signal.emit(self.old_keywords, new_keywords)
+            self.old_keywords = new_keywords
+            
     @logger.logFn        
     def copyNote(self, notebook):
         """
         Return a copy with a different uuid and possibly a different notebook.
 
-        notebook is a NotebookStandartItem.
+        notebook is a NotebookStandardItem.
         """
         pass
 
@@ -264,47 +384,19 @@ class NoteStandardItem(QtGui.QStandardItem):
         pass
 
     @logger.logFn    
-    def getAttachments(self):
-        return self.attachments
-
-    @logger.logFn    
-    def getContent(self):
-        return self.content
-
-    @logger.logFn    
-    def getContentType(self):
-        return self.content_type
-
-    @logger.logFn    
-    def getCurrentVersionNumber(self):
-        return self.cur_version_number
-
-    @logger.logFn    
     def getFileName(self):
         return self.filename
 
     @logger.logFn    
-    def getHTML(self):
-        return self.html_converter(self.content)
+    def getFullName(self):
+        return self.fullname
 
-    @logger.logFn    
-    def getHTMLConverter(self):
-        return self.html_converter
-
-    @logger.logFn
-    def getKeywords(self):
-        return self.keywords
-        
     @logger.logFn    
     def getLink(self):
         """
         This returns a link to the most recent version of the note
         """
         return self.filename + "&v=" + str(self.getNumberOfVersions() - 1)
-
-    @logger.logFn    
-    def getName(self):
-        return self.name
 
     @logger.logFn    
     def getNotebook(self):
@@ -315,44 +407,31 @@ class NoteStandardItem(QtGui.QStandardItem):
         return len(self.versions)
 
     @logger.logFn    
-    def getUnsavedContent(self):
-        return self.unsaved_content
-
-    @logger.logFn    
-    def isLatestVersion(self):
-        return (self.cur_version_number == (self.getNumberOfVersions() - 1))
+    def isLatestVersion(self, note_content):
+        return (note_content.getVersionNumber() == (self.getNumberOfVersions() - 1))
 
     @logger.logFn
-    def loadNote(self, version_index):
-
-        # Handle newly created notes.
-        if (self.getNumberOfVersions == 0):
-            return
+    def loadNoteContent(self, version_number):
+        """
+        Load a version and return it as a NoteContent object.
+        """
         
-        self.cur_version_number = version_index
+        # Handle newly created notes.
+        if (self.getNumberOfVersions() == 0):
+            return NoteContent(self, -1)
+
+        # Load the XML of an existing note.
         xml_text = misc.gitGetVersion(self.notebook.getDirectory(),
                                       self.filename,
-                                      self.versions[version_index])
+                                      self.versions[version_number])
         xml = ElementTree.fromstring(xml_text)
-        self.date = xml.find("date").text
-        self.content = xml.find("content").text
-        self.content_type = xml.find("content_type").text
-        self.name = xml.find("name").text
 
-        attach_xml = xml.find("attachments")
-        if attach_xml is not None:
-            for xml in attach_xml:
-                self.attachments.append(xml.text)
-
-        keyword_xml = xml.find("keywords")
-        if keyword_xml is not None:
-            for xml in keyword_xml:
-                self.keywords.append(xml.text)
+        note_content = NoteContent(self, version_number, xml)
 
         # Check if the keywords have changed.
-        if (set(self.old_keywords) != set(self.keywords)):
-            self.keywords_changed_signal.emit(self.old_keywords, self.keywords)
-            self.old_keywords = self.keywords
+        self.checkKeywords(note_content)
+
+        return note_content
 
     @logger.logFn                
     def moveNote(self, new_notebook):
@@ -368,48 +447,16 @@ class NoteStandardItem(QtGui.QStandardItem):
         #        is not lost when switching notebooks.
         #        We also need to move the attachments.
 
-    @logger.logFn        
-    def saveBackup(self):
-        backup_name = self.fullname[:-4] + "_backup.txt"
-        with open(backup_name, "w") as fp:
-            fp.write(self.content)
-
     @logger.logFn            
-    def saveNote(self):
+    def saveNote(self, note_content):
         """
         Save XML and create a git commit.
         """
 
         # Save XML.
         xml = ElementTree.Element("note")
-        
-        name_xml = ElementTree.SubElement(xml, "name")
-        name_xml.text = self.name
-
-        date_xml = ElementTree.SubElement(xml, "date")
-        date_xml.text = str(datetime.datetime.now())
-        
-        if (len(self.attachments) > 0):
-            attachments_xml = ElementTree.SubElement(xml, "attachments")
-            for attached in self.attachments:
-                file_xml = ElementTree.SubElement(attachments_xml, "file")
-                file_xml.text = attached
-
-        if (len(self.keywords) > 0):
-            keywords_xml = ElementTree.SubElement(xml, "keywords")
-            for word in self.keywords:
-                word_xml = ElementTree.SubElement(keywords_xml, "word")
-                word_xml.text = word
-
-        content_xml = ElementTree.SubElement(xml, "content")
-        content_xml.text = self.content
-
-        content_type_xml = ElementTree.SubElement(xml, "content_type")
-        content_type_xml.text = self.content_type
-
+        note_content.contentToXML(xml)
         misc.pSaveXML(self.fullname, xml)
-
-        # Delete backup.
         
         # git commit.
         misc.gitAddCommit(self.notebook.getDirectory(),
@@ -418,28 +465,11 @@ class NoteStandardItem(QtGui.QStandardItem):
 
         # Append current version to the list of versions.
         self.versions.append(misc.gitGetLastCommitId(self.notebook.getDirectory()))
-        self.cur_version_number = len(self.versions)-1
-
         self.setText(self.name + " (" + str(len(self.versions)) +")")
 
         # Check if the keywords have changed.
-        print "o", self.old_keywords, "n", self.keywords
-        if (set(self.old_keywords) != set(self.keywords)):
-            self.keywords_changed_signal.emit(self.old_keywords, self.keywords)
-            self.old_keywords = self.keywords
+        self.checkKeywords(note_content)
 
-    @logger.logFn        
-    def setContent(self, new_content):
-        self.content = new_content
-
-    @logger.logFn
-    def setKeywords(self, new_keywords):
-        self.keywords = new_keywords
-        
-    @logger.logFn        
-    def setUnsavedContent(self, new_content):
-        self.unsaved_content = new_content
-        
         
 class NoteStandardItemModel(QtGui.QStandardItemModel):
     """
