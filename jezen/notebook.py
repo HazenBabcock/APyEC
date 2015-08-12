@@ -105,11 +105,14 @@ class NotebookMVC(QtGui.QListView):
         self.addNoteAction.triggered.connect(self.handleAddNewNote)
         self.addNotebookAction = QtGui.QAction(self.tr("New Notebook"), self)
         self.addNotebookAction.triggered.connect(self.handleAddNewNotebook)
+        self.renameNotebookAction = QtGui.QAction(self.tr("Rename"), self)
+        self.renameNotebookAction.triggered.connect(self.handleRenameNotebook)
         self.deleteAction = QtGui.QAction(self.tr("Delete Notebook"), self)
         self.deleteAction.triggered.connect(self.handleDelete)
         self.nb_popup_menu = QtGui.QMenu(self)
         self.nb_popup_menu.addAction(self.addNoteAction)
         self.nb_popup_menu.addAction(self.deleteAction)
+        self.nb_popup_menu.addAction(self.renameNotebookAction)        
         self.no_nb_popup_menu = QtGui.QMenu(self)
         self.no_nb_popup_menu.addAction(self.addNotebookAction)
 
@@ -145,16 +148,12 @@ class NotebookMVC(QtGui.QListView):
     def getSelectedNotebooks(self):
         selected_notebooks = []
         for index in self.selectedIndexes():
-            source_index = self.notebook_proxy_model.mapToSource(index)
-            selected_notebooks.append(self.notebook_model.itemFromIndex(source_index))
+            selected_notebooks.append(self.notebookFromProxyIndex(index))
         return selected_notebooks
 
     @logger.logFn    
     def handleAddNewNote(self, boolean):
-
-        # FIXME: Add single method to get notebook from proxy index.
-        source_index = self.notebook_proxy_model.mapToSource(self.right_clicked)
-        self.addNewNote.emit(self.notebook_model.itemFromIndex(source_index))
+        self.addNewNote.emit(self.notebookFromProxyIndex(index))
 
     @logger.logFn
     def handleAddNewNotebook(self, boolean):
@@ -162,8 +161,7 @@ class NotebookMVC(QtGui.QListView):
 
     @logger.logFn        
     def handleDelete(self, boolean):
-        source_index = self.notebook_proxy_model.mapToSource(self.right_clicked)
-        notebook = self.notebook_model.itemFromIndex(source_index)
+        notebook = self.notebookFromProxyIndex(self.right_clicked)
         notebook_name = notebook.getName()
 
         reply = QtGui.QMessageBox.question(self,
@@ -174,8 +172,21 @@ class NotebookMVC(QtGui.QListView):
         if (reply == QtGui.QMessageBox.Yes):
             self.notebook_model.removeRow(source_index.row())
 
-            # Delete the notebooks directory here? Maybe just "hide" it?
+            # This just renames the notebook.xml file to deleted.xml so that
+            # it won't be found the next time the program is started.
+            notebook.deleteNotebook()
 
+    @logger.logFn
+    def handleRenameNotebook(self, boolean):
+        notebook = self.notebookFromProxyIndex(self.right_clicked)
+        notebook_name = notebook.getName()
+        [new_name, ok] = QtGui.QInputDialog.getText(self,
+                                                    'Rename Notebook',
+                                                    'Enter a new name:',
+                                                    text = notebook_name)
+        if ok:
+            notebook.rename(new_name)
+    
     @logger.logFn            
     def handleSelectionChange(self, new_item_selection, old_item_selection):
         selected_notebooks = self.getSelectedNotebooks()
@@ -188,8 +199,8 @@ class NotebookMVC(QtGui.QListView):
 
         for nb_id in map(lambda(x): x[len(directory) + 3:], glob.glob(directory + "nb_*")):
             nb = NotebookStandardItem(directory)
-            nb.loadWithUUID(nb_id)
-            self.notebook_model.appendRow(nb)
+            if nb.loadWithUUID(nb_id):
+                self.notebook_model.appendRow(nb)
 
         self.notebook_proxy_model.sort(0)
 
@@ -204,12 +215,18 @@ class NotebookMVC(QtGui.QListView):
         else:
             QtGui.QListView.mousePressEvent(self, event)
 
+    @logger.logFn        
+    def notebookFromProxyIndex(self, proxy_index):
+        source_index = self.notebook_proxy_model.mapToSource(proxy_index)
+        return self.notebook_model.itemFromIndex(source_index)
+
 
 class NotebookSortFilterProxyModel(QtGui.QSortFilterProxyModel):
     """
     Sort notebooks.
     """
 
+    
 class NotebookStandardItem(QtGui.QStandardItem):
     """
     A single notebook in the notebook listview model.
@@ -250,6 +267,10 @@ class NotebookStandardItem(QtGui.QStandardItem):
         # Commit the notebook name.
         misc.gitAddCommit(self.directory, self.directory + "notebook.xml", "add notebook.")
 
+    @logger.logFn
+    def deleteNotebook(self):
+        os.rename(self.directory + "notebook.xml", self.directory + "deleted.xml")
+        
     @logger.logFn        
     def decNumberUnsaved(self):
         self.number_unsaved -= 1
@@ -281,13 +302,30 @@ class NotebookStandardItem(QtGui.QStandardItem):
     def loadWithUUID(self, notebook_uuid):
         self.uuid = notebook_uuid
         self.directory = self.directory + self.uuid + "/"
-        xml = ElementTree.parse(self.directory + "notebook.xml").getroot()
-        self.name = xml.find("name").text
-        self.setText(self.name)
+        if os.path.exists(self.directory + "notebook.xml"):
+            xml = ElementTree.parse(self.directory + "notebook.xml").getroot()
+            self.name = xml.find("name").text
+            self.setText(self.name)
 
-        self.git_log = misc.gitGetLog(self.directory)
+            self.git_log = misc.gitGetLog(self.directory)
+            return True
+        else:
+            return False
 
-            
+    @logger.logFn
+    def rename(self, new_name):
+        self.name = str(new_name)
+        self.setText(new_name)
+        
+        # Update the XML and commit.
+        xml = ElementTree.Element("notebook")
+        name_xml = ElementTree.SubElement(xml, "name")
+        name_xml.text = self.name
+
+        misc.pSaveXML(self.directory + "notebook.xml", xml)
+        misc.gitAddCommit(self.directory, self.directory + "notebook.xml", "rename notebook.")
+        
+
 class NotebookStandardItemModel(QtGui.QStandardItemModel):
     """
     The notebook listview model.
