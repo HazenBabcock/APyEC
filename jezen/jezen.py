@@ -47,7 +47,8 @@ class Jezen(QtGui.QMainWindow):
         self.ui.actionQuit.triggered.connect(self.handleQuit)
 
         self.ui.keywordChooserMVC.selectedKeywordsChanged.connect(self.ui.noteMVC.updateKeywordFilter)
-        self.ui.notebookMVC.addNote.connect(self.handleNewNote)
+        self.ui.notebookMVC.addNewNote.connect(self.handleNewNote)
+        self.ui.notebookMVC.addNewNotebook.connect(self.handleNewNotebook)
         self.ui.notebookMVC.selectedNotebooksChanged.connect(self.ui.noteMVC.updateNotebookFilter)
         self.ui.noteMVC.noteKeywordsChanged.connect(self.ui.keywordChooserMVC.updateKeywords)
         self.ui.noteMVC.selectedNoteChanged.connect(self.viewer.newNoteView)
@@ -104,9 +105,9 @@ class Jezen(QtGui.QMainWindow):
                 nb = notebook.chooseNotebook(self.ui.notebookMVC)
             if nb is not None:
                 self.ui.noteMVC.addNote(nb, str(name))
-        
+
     @logger.logFn
-    def handleNewNotebook(self, boolean):
+    def handleNewNotebook(self, boolean = False):
         [notebook_name, ok] = QtGui.QInputDialog.getText(self,
                                                          'New Notebook',
                                                          'Enter the notebooks name:')        

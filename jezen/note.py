@@ -21,6 +21,7 @@ import misc
 class NoteContent(object):
     """
     The content, keywords, attachments, etc.. of a single version of a single note.
+    There can be many of these associated with a single NoteStandardItem.
     """
     @logger.logFn
     def __init__(self, note, version_number, xml = None):
@@ -33,6 +34,7 @@ class NoteContent(object):
         self.date = None
         self.html_converter = markdown.markdown
         self.keywords = []
+        self.name = note.getName()
         self.note = note
         self.unsaved_content = None
         self.version_number = version_number
@@ -308,20 +310,9 @@ class NoteSortFilterProxyModel(QtGui.QSortFilterProxyModel):
 class NoteStandardItem(QtGui.QStandardItem):
     """
     A single note.
-
-    This class also handles loading and saving notes.
+    This class also handles loading and saving the notes contents. There
+    is only one of these per note.
     """
-
-    #
-    # FIXME:
-    #  It might be a better idea if this created and handed out some sort of note
-    #  object? Otherwise it seems like things could get messy with this open in
-    #  both a viewer and an editor with an uncertain underlying state. Maybe it
-    #  sufficient to just make sure that there is only ever one view of this item?
-    #
-    #  Keyword addition and subtraction could also get complicated fast.
-    #
-    
     @logger.logFn
     def __init__(self, notebook, keywords_changed_signal, note_file = None, note_name = None):
         """
@@ -334,6 +325,7 @@ class NoteStandardItem(QtGui.QStandardItem):
         """
         self.filname = ""
         self.fullname = ""
+        self.keywords = []
         self.keywords_changed_signal = keywords_changed_signal
         self.name = ""
         self.notebook = notebook
@@ -351,6 +343,10 @@ class NoteStandardItem(QtGui.QStandardItem):
 
             note_content = self.loadNoteContent(len(self.versions) - 1)
             self.name = note_content.getName()
+
+            # For now, keywords are always from the most recently saved
+            # version of the note. This may need improvement down the road?
+            self.keywords = list(note_content.getKeywords())
             
         # Create a new note.
         else:
@@ -383,6 +379,14 @@ class NoteStandardItem(QtGui.QStandardItem):
         """
         pass
 
+    @logger.logFn
+    def getKeywords (self):
+        return self.keywords
+        
+    @logger.logFn
+    def getName(self):
+        return self.name
+    
     @logger.logFn    
     def getFileName(self):
         return self.filename
@@ -469,6 +473,10 @@ class NoteStandardItem(QtGui.QStandardItem):
 
         # Check if the keywords have changed.
         self.checkKeywords(note_content)
+
+        # For now, keywords are always from the most recently saved
+        # version of the note. This may need improvement down the road?
+        self.keywords = list(note_content.getKeywords())
 
         
 class NoteStandardItemModel(QtGui.QStandardItemModel):

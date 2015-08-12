@@ -68,7 +68,6 @@ class KeywordChooserMVC(QtGui.QListView):
 
     @logger.logFn
     def updateKeywords(self, old_keywords, new_keywords):
-        print old_keywords, new_keywords
 
         # Delete only the keywords that are not also in the new list.
         to_del = [x for x in old_keywords if not x in new_keywords]

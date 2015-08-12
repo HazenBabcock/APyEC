@@ -90,8 +90,8 @@ class NotebookMVC(QtGui.QListView):
     """
     Encapsulates a list view specialized for notebooks and it's associated model.
     """
-    addNote = QtCore.pyqtSignal(object)
-    addNotebook = QtCore.pyqtSignal()
+    addNewNote = QtCore.pyqtSignal(object)
+    addNewNotebook = QtCore.pyqtSignal()
     selectedNotebooksChanged = QtCore.pyqtSignal(list)
 
     @logger.logFn    
@@ -102,14 +102,16 @@ class NotebookMVC(QtGui.QListView):
 
         # Context menu
         self.addNoteAction = QtGui.QAction(self.tr("Add Note"), self)
-        self.addNoteAction.triggered.connect(self.handleAddNote)
+        self.addNoteAction.triggered.connect(self.handleAddNewNote)
         self.addNotebookAction = QtGui.QAction(self.tr("New Notebook"), self)
-        self.addNotebookAction.triggered.connect(self.handleAddNotebook)
+        self.addNotebookAction.triggered.connect(self.handleAddNewNotebook)
         self.deleteAction = QtGui.QAction(self.tr("Delete Notebook"), self)
         self.deleteAction.triggered.connect(self.handleDelete)
-        self.popup_menu = QtGui.QMenu(self)
-        self.popup_menu.addAction(self.addNoteAction)
-        self.popup_menu.addAction(self.deleteAction)
+        self.nb_popup_menu = QtGui.QMenu(self)
+        self.nb_popup_menu.addAction(self.addNoteAction)
+        self.nb_popup_menu.addAction(self.deleteAction)
+        self.no_nb_popup_menu = QtGui.QMenu(self)
+        self.no_nb_popup_menu.addAction(self.addNotebookAction)
 
         # Notebook model
         self.notebook_model = NotebookStandardItemModel(self)
@@ -148,15 +150,15 @@ class NotebookMVC(QtGui.QListView):
         return selected_notebooks
 
     @logger.logFn    
-    def handleAddNote(self, boolean):
+    def handleAddNewNote(self, boolean):
 
         # FIXME: Add single method to get notebook from proxy index.
         source_index = self.notebook_proxy_model.mapToSource(self.right_clicked)
-        self.addNote.emit(self.notebook_model.itemFromIndex(source_index))
+        self.addNewNote.emit(self.notebook_model.itemFromIndex(source_index))
 
-    @logger.logFn        
-    def handleAddNotebook(self, boolean):
-        self.addNotebook.emit()
+    @logger.logFn
+    def handleAddNewNotebook(self, boolean):
+        self.addNewNotebook.emit()
 
     @logger.logFn        
     def handleDelete(self, boolean):
@@ -196,7 +198,9 @@ class NotebookMVC(QtGui.QListView):
         if (event.button() == QtCore.Qt.RightButton):
             self.right_clicked = self.indexAt(event.pos())
             if (self.right_clicked.row() > -1):
-                self.popup_menu.exec_(event.globalPos())
+                self.nb_popup_menu.exec_(event.globalPos())
+            else:
+                self.no_nb_popup_menu.exec_(event.globalPos())                
         else:
             QtGui.QListView.mousePressEvent(self, event)
 
