@@ -32,6 +32,10 @@ class Jezen(QtGui.QMainWindow):
         layout.addWidget(self.viewer)
         self.ui.noteGroupBox.setLayout(layout)
 
+        self.ui.sortbyComboBox.addItem("Name")
+        self.ui.sortbyComboBox.addItem("Date Created")
+        self.ui.sortbyComboBox.addItem("Date Modified")
+            
         # Load settings
         self.directory = str(self.settings.value("directory", "./").toString())
 
@@ -45,6 +49,7 @@ class Jezen(QtGui.QMainWindow):
         self.ui.actionNew_Notebook.triggered.connect(self.handleNewNotebook)
         self.ui.actionSet_Directory.triggered.connect(self.handleSetDirectory)
         self.ui.actionQuit.triggered.connect(self.handleQuit)
+        self.ui.sortbyComboBox.currentIndexChanged[str].connect(self.ui.noteMVC.handleSortBy)
 
         self.ui.keywordChooserMVC.selectedKeywordsChanged.connect(self.ui.noteMVC.updateKeywordFilter)
         self.ui.notebookMVC.addNewNote.connect(self.handleNewNote)

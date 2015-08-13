@@ -315,6 +315,14 @@ class NoteMVC(QtGui.QListView):
         if (len(self.selectedIndexes()) > 0):
             self.selectedNoteChanged.emit(self.noteFromProxyIndex(self.selectedIndexes()[0]))
 
+    @logger.logFn
+    def handleSortBy(self, sort_mode):
+        """
+        Sort by (0) name, (1) date created, (2) date modified.
+        """
+        self.note_proxy_model.setSortMode(sort_mode)
+        self.note_proxy_model.sort(0)
+        
     @logger.logFn            
     def loadNotes(self, notebook):
         """
@@ -375,6 +383,7 @@ class NoteSortFilterProxyModel(QtGui.QSortFilterProxyModel):
         QtGui.QSortFilterProxyModel.__init__(self, parent)
         self.keywords = []
         self.notebooks = []
+        self.sort_mode = "Name"
 
     @logger.logFn        
     def filterAcceptsRow(self, source_row, source_parent):
@@ -393,6 +402,21 @@ class NoteSortFilterProxyModel(QtGui.QSortFilterProxyModel):
 
         return accept
 
+    def lessThan(self, left, right):
+        """
+        Custom sorting.
+        """
+        if (self.sort_mode == "Name"):
+            # Use default sorting to sort by note name.
+            return QtGui.QSortFilterProxyModel.lessThan(self, left, right)
+        else:
+            left_note = self.sourceModel().itemFromIndex(left)
+            right_note = self.sourceModel().itemFromIndex(right)            
+            if (self.sort_mode == "Date Created"):
+                return (left_note.date_created < right_note.date_created)
+            else:
+                return (left_note.date_modified < right_note.date_modified)
+        
     @logger.logFn    
     def setKeywords(self, new_keywords):
         self.keywords = new_keywords
@@ -402,7 +426,11 @@ class NoteSortFilterProxyModel(QtGui.QSortFilterProxyModel):
     def setNotebooks(self, new_notebooks):
         self.notebooks = new_notebooks
         self.invalidateFilter()
-    
+
+    @logger.logFn
+    def setSortMode(self, sort_mode):
+        self.sort_mode = sort_mode
+        
     
 class NoteStandardItem(QtGui.QStandardItem):
     """
@@ -593,7 +621,6 @@ class NoteStandardItem(QtGui.QStandardItem):
         self.versions = []
             
         # Replay history in the new notebook.
-        # FIXME: Note dates are getting overwritten.
         for content in note_contents:
             self.saveNote(content, use_current_time = False)
 

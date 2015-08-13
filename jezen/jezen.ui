@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>653</width>
-    <height>414</height>
+    <width>1177</width>
+    <height>829</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -136,7 +136,7 @@
            </widget>
           </item>
           <item>
-           <widget class="QComboBox" name="sortbyCcomboBox"/>
+           <widget class="QComboBox" name="sortbyComboBox"/>
           </item>
          </layout>
         </item>
@@ -162,7 +162,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>653</width>
+     <width>1177</width>
      <height>26</height>
     </rect>
    </property>

@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'jezen.ui'
 #
-# Created: Sat Aug  8 15:11:06 2015
+# Created: Thu Aug 13 18:31:15 2015
 #      by: PyQt4 UI code generator 4.11.3
 #
 # WARNING! All changes made in this file will be lost!
@@ -26,7 +26,7 @@ except AttributeError:
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
         MainWindow.setObjectName(_fromUtf8("MainWindow"))
-        MainWindow.resize(653, 414)
+        MainWindow.resize(1177, 829)
         self.centralwidget = QtGui.QWidget(MainWindow)
         self.centralwidget.setObjectName(_fromUtf8("centralwidget"))
         self.horizontalLayout_3 = QtGui.QHBoxLayout(self.centralwidget)
@@ -108,9 +108,9 @@ class Ui_MainWindow(object):
         self.sortbyLabel = QtGui.QLabel(self.notesGroupBox)
         self.sortbyLabel.setObjectName(_fromUtf8("sortbyLabel"))
         self.horizontalLayout_4.addWidget(self.sortbyLabel)
-        self.sortbyCcomboBox = QtGui.QComboBox(self.notesGroupBox)
-        self.sortbyCcomboBox.setObjectName(_fromUtf8("sortbyCcomboBox"))
-        self.horizontalLayout_4.addWidget(self.sortbyCcomboBox)
+        self.sortbyComboBox = QtGui.QComboBox(self.notesGroupBox)
+        self.sortbyComboBox.setObjectName(_fromUtf8("sortbyComboBox"))
+        self.horizontalLayout_4.addWidget(self.sortbyComboBox)
         self.verticalLayout_2.addLayout(self.horizontalLayout_4)
         self.noteGroupBox = QtGui.QGroupBox(self.mainSplitter)
         sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.MinimumExpanding, QtGui.QSizePolicy.Preferred)
@@ -122,7 +122,7 @@ class Ui_MainWindow(object):
         self.horizontalLayout_3.addWidget(self.mainSplitter)
         MainWindow.setCentralWidget(self.centralwidget)
         self.menubar = QtGui.QMenuBar(MainWindow)
-        self.menubar.setGeometry(QtCore.QRect(0, 0, 653, 26))
+        self.menubar.setGeometry(QtCore.QRect(0, 0, 1177, 26))
         self.menubar.setObjectName(_fromUtf8("menubar"))
         self.menuFile = QtGui.QMenu(self.menubar)
         self.menuFile.setObjectName(_fromUtf8("menuFile"))
