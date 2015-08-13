@@ -108,6 +108,10 @@ class NoteContent(object):
         return self.content_type
 
     @logger.logFn
+    def getDate(self):
+        return datetime.datetime.strptime(self.date, '%Y-%m-%d %H:%M:%S.%f')
+    
+    @logger.logFn
     def getKeywords(self):
         return self.keywords
 
@@ -413,6 +417,8 @@ class NoteStandardItem(QtGui.QStandardItem):
 
         note_file is path/note_(uuid).xml
         """
+        self.date_created = None
+        self.date_modified = None
         self.filname = ""
         self.fullname = ""
         self.keywords = []
@@ -431,15 +437,21 @@ class NoteStandardItem(QtGui.QStandardItem):
             # is ordered with the most recent version last.
             self.versions = self.notebook.getNoteVersions(self.filename)
 
+            note_content = self.loadNoteContent(0)
+            self.date_created = note_content.getDate()
+            
             note_content = self.loadNoteContent(len(self.versions) - 1)
+            self.date_modified = note_content.getDate()
             self.name = note_content.getName()
-
+            
             # For now, keywords are always from the most recently saved
             # version of the note. This may need improvement down the road?
             self.keywords = list(note_content.getKeywords())
             
         # Create a new note.
         else:
+            self.date_created = datetime.datetime.now()
+            self.date_modified = datetime.datetime.now()
             self.name = note_name
             self.filename = "note_" + str(uuid.uuid1()) + ".xml"
             self.fullname = self.notebook.getDirectory() + self.filename
