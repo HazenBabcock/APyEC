@@ -61,7 +61,7 @@ class NoteContent(object):
         self.attachments.append(attachment_fullname)
                     
     @logger.logFn
-    def contentToXML(self, xml):
+    def contentToXML(self, xml, use_current_time):
         """
         Add the note contents to the xml.
         """
@@ -69,7 +69,10 @@ class NoteContent(object):
         name_xml.text = self.name
 
         date_xml = ElementTree.SubElement(xml, "date")
-        date_xml.text = str(datetime.datetime.now())
+        if use_current_time:
+            date_xml.text = str(datetime.datetime.now())
+        else:
+            date_xml.text = self.date
         
         if (len(self.attachments) > 0):
             attachments_xml = ElementTree.SubElement(xml, "attachments")
@@ -443,7 +446,13 @@ class NoteStandardItem(QtGui.QStandardItem):
             note_content = self.loadNoteContent(len(self.versions) - 1)
             self.date_modified = note_content.getDate()
             self.name = note_content.getName()
-            
+
+            if 0:
+                print self.name
+                print str(self.date_created)
+                print str(self.date_modified)
+                print ""
+                
             # For now, keywords are always from the most recently saved
             # version of the note. This may need improvement down the road?
             self.keywords = list(note_content.getKeywords())
@@ -584,8 +593,9 @@ class NoteStandardItem(QtGui.QStandardItem):
         self.versions = []
             
         # Replay history in the new notebook.
+        # FIXME: Note dates are getting overwritten.
         for content in note_contents:
-            self.saveNote(content)
+            self.saveNote(content, use_current_time = False)
 
     @logger.logFn
     def rename(self, new_name):
@@ -598,14 +608,14 @@ class NoteStandardItem(QtGui.QStandardItem):
         self.saveNote(note_content)
 
     @logger.logFn            
-    def saveNote(self, note_content):
+    def saveNote(self, note_content, use_current_time = True):
         """
         Save XML and create a git commit.
         """
 
         # Save XML.
         xml = ElementTree.Element("note")
-        note_content.contentToXML(xml)
+        note_content.contentToXML(xml, use_current_time)
         misc.pSaveXML(self.fullname, xml)
         
         # git commit.
