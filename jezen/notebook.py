@@ -19,7 +19,7 @@ import misc
 import note
 
 @logger.logFn
-def chooseNotebook(notebook_mvc):
+def chooseNotebook(notebook_mvc, a_notebook = None):
     """
     Prompts the user to choose a NotebookStandardItem from either:
       (1) The currently selected NotebookStandardItems or 
@@ -30,7 +30,12 @@ def chooseNotebook(notebook_mvc):
 
     Returns the choosen NotebookStandardItem (or None).
     """
-    notebooks = notebook_mvc.getSelectedNotebooks()
+    if a_notebook is None:
+        notebooks = notebook_mvc.getSelectedNotebooks()
+    else:
+        notebooks = notebook_mvc.getAllNotebooks()
+        notebooks.remove(a_notebook)
+        
     if (len(notebooks) == 0):
         notebooks = notebook_mvc.getAllNotebooks()
     if (len(notebooks) == 1):
@@ -111,6 +116,7 @@ class NotebookMVC(QtGui.QListView):
         self.deleteAction.triggered.connect(self.handleDelete)
         self.nb_popup_menu = QtGui.QMenu(self)
         self.nb_popup_menu.addAction(self.addNoteAction)
+        self.nb_popup_menu.addAction(self.addNotebookAction)
         self.nb_popup_menu.addAction(self.deleteAction)
         self.nb_popup_menu.addAction(self.renameNotebookAction)        
         self.no_nb_popup_menu = QtGui.QMenu(self)
@@ -153,7 +159,7 @@ class NotebookMVC(QtGui.QListView):
 
     @logger.logFn    
     def handleAddNewNote(self, boolean):
-        self.addNewNote.emit(self.notebookFromProxyIndex(index))
+        self.addNewNote.emit(self.notebookFromProxyIndex(self.right_clicked))
 
     @logger.logFn
     def handleAddNewNotebook(self, boolean):
@@ -170,6 +176,7 @@ class NotebookMVC(QtGui.QListView):
                                            QtGui.QMessageBox.Yes,
                                            QtGui.QMessageBox.No)
         if (reply == QtGui.QMessageBox.Yes):
+            source_index = self.notebook_proxy_model.mapToSource(self.right_clicked)
             self.notebook_model.removeRow(source_index.row())
 
             # This just renames the notebook.xml file to deleted.xml so that
@@ -186,6 +193,7 @@ class NotebookMVC(QtGui.QListView):
                                                     text = notebook_name)
         if ok:
             notebook.rename(new_name)
+            self.notebook_proxy_model.sort(0)
     
     @logger.logFn            
     def handleSelectionChange(self, new_item_selection, old_item_selection):

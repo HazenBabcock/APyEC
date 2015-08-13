@@ -50,6 +50,10 @@ class Jezen(QtGui.QMainWindow):
         self.ui.notebookMVC.addNewNote.connect(self.handleNewNote)
         self.ui.notebookMVC.addNewNotebook.connect(self.handleNewNotebook)
         self.ui.notebookMVC.selectedNotebooksChanged.connect(self.ui.noteMVC.updateNotebookFilter)
+        self.ui.noteMVC.addNewNote.connect(self.handleNewNote)
+        self.ui.noteMVC.copyNote.connect(self.handleCopyNote)
+        self.ui.noteMVC.editNote.connect(self.handleEditNote)
+        self.ui.noteMVC.moveNote.connect(self.handleMoveNote)
         self.ui.noteMVC.noteKeywordsChanged.connect(self.ui.keywordChooserMVC.updateKeywords)
         self.ui.noteMVC.selectedNoteChanged.connect(self.viewer.newNoteView)
 
@@ -80,6 +84,12 @@ class Jezen(QtGui.QMainWindow):
         self.settings.setValue("email", self.email)
 
     @logger.logFn
+    def handleCopyNote(self, a_note):
+        nb = notebook.chooseNotebook(self.ui.notebookMVC)
+        if nb is not None:
+            self.ui.noteMVC.copyANote(nb, a_note)
+        
+    @logger.logFn
     def handleEditNote(self, a_note, note_content):
         ok = True
         if not a_note.isLatestVersion(note_content):
@@ -95,6 +105,12 @@ class Jezen(QtGui.QMainWindow):
             tmp = editor.Editor(a_note, note_content, self)
             tmp.show()
 
+    @logger.logFn
+    def handleMoveNote(self, a_note):
+        nb = notebook.chooseNotebook(self.ui.notebookMVC, a_note.getNotebook())
+        if nb is not None:
+            self.ui.noteMVC.moveANote(nb, a_note)
+        
     @logger.logFn            
     def handleNewNote(self, nb):
         [name, ok] = QtGui.QInputDialog.getText(self,

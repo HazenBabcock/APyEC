@@ -107,6 +107,13 @@ def gitInit(directory, name, email):
     subprocess.call(["git", "config", "user.email", email])
 
 
+@logger.logFn
+@setDirectory
+def gitRemove(directory, filename, commit):
+    subprocess.call(["git", "rm", filename])
+    subprocess.call(["git", "commit", "-m", commit])
+    
+
 @logger.logFn    
 def pSaveXML(filename, xml):
     """

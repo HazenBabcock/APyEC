@@ -166,6 +166,11 @@ class Viewer(QtGui.QWidget):
         """
         Called when used directly as a viewer.
         """
+        if new_note is None:
+            self.web_viewer.setHtml("")
+            self.ui.versionWidget.hide()
+            return
+            
         self.note = new_note
         self.base_url = QtCore.QUrl.fromLocalFile(self.note.getNotebook().getDirectory() + "notebook.xml")
         

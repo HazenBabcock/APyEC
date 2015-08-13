@@ -33,6 +33,7 @@ class AttachmentsMVC(QtGui.QListView):
 
         self.popup_menu = QtGui.QMenu(self)
         self.popup_menu.addAction(self.copyLinkAction)
+        self.popup_menu.addAction(self.deleteAttachmentAction)
 
         # Attachments model
         self.attachment_model = QtGui.QStandardItemModel()
@@ -54,7 +55,10 @@ class AttachmentsMVC(QtGui.QListView):
 
     @logger.logFn        
     def handleDeleteAttachment(self, boolean):
-        pass
+        an_attachment = self.attachment_model.itemFromIndex(self.right_clicked)
+        self.note_content.removeAttachment(an_attachment.getFullname())
+        self.note.saveNote(self.note_content)
+        self.attachment_model.removeRow(self.right_clicked.row())
 
     @logger.logFn    
     def mousePressEvent(self, event):
@@ -114,7 +118,7 @@ class AttachmentsStandardItem(QtGui.QStandardItem):
         misc.gitAddCommit(directory,
                           self.fullname,
                           "attachment " + self.filename)
-
+        
     @logger.logFn        
     def getFilename(self):
         return self.filename

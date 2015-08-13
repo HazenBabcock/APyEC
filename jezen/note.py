@@ -9,6 +9,7 @@ import glob
 import markdown
 import os
 import uuid
+import shutil
 
 from PyQt4 import QtCore, QtGui
 
@@ -126,6 +127,10 @@ class NoteContent(object):
     def getVersionNumber(self):
         return self.version_number    
 
+    @logger.logFn
+    def removeAttachment(self, attachment_fullname):
+        self.attachments.remove(attachment_fullname)
+        
     @logger.logFn        
     def saveBackup(self):
         backup_name = self.note.getFullname()[:-4] + "_backup.txt"
@@ -139,6 +144,10 @@ class NoteContent(object):
     @logger.logFn
     def setKeywords(self, new_keywords):
         self.keywords = new_keywords
+
+    @logger.logFn
+    def setName(self, new_name):
+        self.name = new_name
         
     @logger.logFn        
     def setUnsavedContent(self, new_content):
@@ -149,6 +158,10 @@ class NoteMVC(QtGui.QListView):
     """
     Encapsulates a list view specialized for notes and it's associated model.
     """
+    addNewNote = QtCore.pyqtSignal()
+    copyNote = QtCore.pyqtSignal(object)
+    editNote = QtCore.pyqtSignal(object, object)
+    moveNote = QtCore.pyqtSignal(object)
     noteKeywordsChanged = QtCore.pyqtSignal(list, list)
     selectedNoteChanged = QtCore.pyqtSignal(object)
 
@@ -165,12 +178,27 @@ class NoteMVC(QtGui.QListView):
         self.copyNoteAction.triggered.connect(self.handleCopyNote)
         self.deleteNoteAction = QtGui.QAction(self.tr("Delete Note"), self)
         self.deleteNoteAction.triggered.connect(self.handleDeleteNote)
+        self.editNoteAction = QtGui.QAction(self.tr("Edit Note"), self)
+        self.editNoteAction.triggered.connect(self.handleEditNote)
+        self.moveNoteAction = QtGui.QAction(self.tr("Move Note"), self)
+        self.moveNoteAction.triggered.connect(self.handleMoveNote)
+        self.newNoteAction = QtGui.QAction(self.tr("New Note"), self)
+        self.newNoteAction.triggered.connect(self.handleNewNote)
+        self.renameNoteAction = QtGui.QAction(self.tr("Rename Note"), self)
+        self.renameNoteAction.triggered.connect(self.handleRenameNote)
 
-        self.popup_menu = QtGui.QMenu(self)
-        self.popup_menu.addAction(self.copyLinkAction)
-        self.popup_menu.addAction(self.copyNoteAction)
-        self.popup_menu.addAction(self.deleteNoteAction)
-        
+        self.note_popup_menu = QtGui.QMenu(self)
+        self.note_popup_menu.addAction(self.copyLinkAction)
+        self.note_popup_menu.addAction(self.copyNoteAction)
+        self.note_popup_menu.addAction(self.deleteNoteAction)
+        self.note_popup_menu.addAction(self.editNoteAction)
+        self.note_popup_menu.addAction(self.moveNoteAction)
+        self.note_popup_menu.addAction(self.newNoteAction)
+        self.note_popup_menu.addAction(self.renameNoteAction)        
+
+        self.no_note_popup_menu = QtGui.QMenu(self)
+        self.no_note_popup_menu.addAction(self.newNoteAction)
+
         # Note model
         self.note_model = NoteStandardItemModel(self)
         self.note_proxy_model = NoteSortFilterProxyModel(self)
@@ -195,19 +223,61 @@ class NoteMVC(QtGui.QListView):
         self.note_model.clear()
 
     @logger.logFn
+    def copyANote(self, notebook, old_note):
+        # FIXME: Should save note history?
+        new_note = NoteStandardItem(notebook,
+                                    self.noteKeywordsChanged,
+                                    note_name = old_note.getName() + " copy")
+        self.notes[new_note.getFileName()] = new_note
+        new_note.saveNote(old_note.loadNoteContent(old_note.getLatestVersionNumber()))
+        self.note_model.appendRow(new_note)
+        self.note_proxy_model.sort(0)
+        
+    @logger.logFn
     def handleCopyLink(self, boolean):
         clipboard = QtGui.QApplication.clipboard()
         a_note = self.noteFromProxyIndex(self.right_clicked)
+
+        # FIXME: This should depend on note content type.
         clipboard.setText("[" + a_note.getName() + "](" + a_note.getLink() + ")")
 
     @logger.logFn
     def handleCopyNote(self, boolean):
-        pass
+        self.copyNote.emit(self.noteFromProxyIndex(self.right_clicked))
 
-    @logger.logFn    
+    @logger.logFn
     def handleDeleteNote(self, boolean):
-        pass
+        a_note = self.noteFromProxyIndex(self.right_clicked)
+        a_note_name = a_note.getName()
 
+        reply = QtGui.QMessageBox.question(self,
+                                           "Warning!",
+                                           "Really delete note '" + a_note_name + "'?",
+                                           QtGui.QMessageBox.Yes,
+                                           QtGui.QMessageBox.No)
+        if (reply == QtGui.QMessageBox.Yes):
+            source_index = self.note_proxy_model.mapToSource(self.right_clicked)
+            self.note_model.removeRow(source_index.row())
+            del self.notes[a_note.getFileName()]            
+            a_note.deleteNote()
+
+            if (len(self.selectedIndexes()) == 0):
+                self.selectedNoteChanged.emit(None)
+
+    @logger.logFn
+    def handleEditNote(self, boolean):
+        a_note = self.noteFromProxyIndex(self.right_clicked)
+        note_content = a_note.loadNoteContent(a_note.getLatestVersionNumber())
+        self.editNote.emit(a_note, note_content)
+        
+    @logger.logFn
+    def handleNewNote(self, boolean):
+        self.addNewNote.emit()
+
+    @logger.logFn
+    def handleMoveNote(self, boolean):
+        self.moveNote.emit(self.noteFromProxyIndex(self.right_clicked))
+    
     @logger.logFn    
     def handleNoteLinkClicked(self, note_filename, note_version):
         note_filename = str(note_filename)
@@ -220,6 +290,18 @@ class NoteMVC(QtGui.QListView):
             else:
                 self.clearSelection()
                 self.selectedNoteChanged.emit(a_note)
+
+    @logger.logFn
+    def handleRenameNote(self, boolean):
+        a_note = self.noteFromProxyIndex(self.right_clicked)
+        a_note_name = a_note.getName()
+        [new_name, ok] = QtGui.QInputDialog.getText(self,
+                                                    'Rename Note',
+                                                    'Enter a new name:',
+                                                    text = a_note_name)
+        if ok:
+            a_note.rename(new_name)
+            self.note_proxy_model.sort(0)
 
     @logger.logFn                
     def handleSelectionChange(self, new_item_selection, old_item_selection):
@@ -239,9 +321,30 @@ class NoteMVC(QtGui.QListView):
         self.note_proxy_model.sort(0)
 
     @logger.logFn        
+    def mousePressEvent(self, event):
+        if (event.button() == QtCore.Qt.RightButton):
+            self.right_clicked = self.indexAt(event.pos())
+            if (self.right_clicked.row() > -1):
+                self.note_popup_menu.exec_(event.globalPos())
+            else:
+                self.no_note_popup_menu.exec_(event.globalPos())
+        else:
+            # This is so that the user can force updates of the display of a note.
+            proxy_index = self.indexAt(event.pos())
+            if (len(self.selectedIndexes()) > 0) and (proxy_index == self.selectedIndexes()[0]):
+                self.selectedNoteChanged.emit(self.noteFromProxyIndex(proxy_index))
+            else:
+                QtGui.QListView.mousePressEvent(self, event)
+
+    @logger.logFn
+    def moveANote(self, notebook, a_note):
+        a_note.moveNote(notebook)
+        self.note_proxy_model.invalidateFilter()
+
+    @logger.logFn        
     def noteFromProxyIndex(self, proxy_index):
         source_index = self.note_proxy_model.mapToSource(proxy_index)
-        return self.note_model.itemFromIndex(source_index)
+        return self.note_model.itemFromIndex(source_index)                
 
     @logger.logFn    
     def updateKeywordFilter(self, keywords):
@@ -252,20 +355,7 @@ class NoteMVC(QtGui.QListView):
     def updateNotebookFilter(self, notebooks):
         self.note_proxy_model.setNotebooks(notebooks)
         self.note_proxy_model.sort(0)        
-
-    @logger.logFn        
-    def mousePressEvent(self, event):
-        if (event.button() == QtCore.Qt.RightButton):
-            self.right_clicked = self.indexAt(event.pos())
-            if (self.right_clicked.row() > -1):
-                self.popup_menu.exec_(event.globalPos())
-        else:
-            # This is so that the user can force updates of the display of a note.
-            proxy_index = self.indexAt(event.pos())
-            if (len(self.selectedIndexes()) > 0) and (proxy_index == self.selectedIndexes()[0]):
-                self.selectedNoteChanged.emit(self.noteFromProxyIndex(proxy_index))
-            else:
-                QtGui.QListView.mousePressEvent(self, event)
+                
 
 
 class NoteSortFilterProxyModel(QtGui.QSortFilterProxyModel):
@@ -363,30 +453,17 @@ class NoteStandardItem(QtGui.QStandardItem):
             self.keywords_changed_signal.emit(self.old_keywords, new_keywords)
             self.old_keywords = new_keywords
             
-    @logger.logFn        
-    def copyNote(self, notebook):
-        """
-        Return a copy with a different uuid and possibly a different notebook.
-
-        notebook is a NotebookStandardItem.
-        """
-        pass
-
     @logger.logFn    
     def deleteNote(self):
         """
         Remove the note file from the disk and create a git commit.
         """
-        pass
+        # FIXME: Maybe notes should just be marked as deleted, but still
+        #  exist so that any old links to them would still work?
+        misc.gitRemove(self.notebook.getDirectory(),
+                       self.filename,
+                       "remove " + self.name)
 
-    @logger.logFn
-    def getKeywords (self):
-        return self.keywords
-        
-    @logger.logFn
-    def getName(self):
-        return self.name
-    
     @logger.logFn    
     def getFileName(self):
         return self.filename
@@ -395,13 +472,25 @@ class NoteStandardItem(QtGui.QStandardItem):
     def getFullName(self):
         return self.fullname
 
+    @logger.logFn
+    def getKeywords (self):
+        return self.keywords
+
+    @logger.logFn
+    def getLatestVersionNumber(self):
+        return self.getNumberOfVersions() - 1
+    
     @logger.logFn    
     def getLink(self):
         """
         This returns a link to the most recent version of the note
         """
-        return self.filename + "&v=" + str(self.getNumberOfVersions() - 1)
+        return self.filename + "&v=" + str(self.getLatestVersionNumber())
 
+    @logger.logFn
+    def getName(self):
+        return self.name
+    
     @logger.logFn    
     def getNotebook(self):
         return self.notebook
@@ -412,7 +501,7 @@ class NoteStandardItem(QtGui.QStandardItem):
 
     @logger.logFn    
     def isLatestVersion(self, note_content):
-        return (note_content.getVersionNumber() == (self.getNumberOfVersions() - 1))
+        return (note_content.getVersionNumber() == self.getLatestVersionNumber())
 
     @logger.logFn
     def loadNoteContent(self, version_number):
@@ -444,12 +533,57 @@ class NoteStandardItem(QtGui.QStandardItem):
 
         new_notebook is a NotebookStandardItem.
         """
-        self.notebook = new_notebook
-        self.filename = self.notebook.getDirectory() + self.uuid
 
-        # FIXME: Need to replay and commit the versions so that the history
-        #        is not lost when switching notebooks.
-        #        We also need to move the attachments.
+        # Load all versions of the note in the old notebook
+        # and all of the (unique) attachments.
+        attachments = {}
+        note_contents = []
+        for v_number in range(self.getNumberOfVersions()):
+            note_content = self.loadNoteContent(v_number)
+            note_contents.append(note_content)
+            for fullname in note_content.getAttachments():
+                attachments[fullname] = True
+
+        # Move attachments.
+        old_dir = self.notebook.getDirectory()
+        new_dir = new_notebook.getDirectory()
+        for fullname in attachments.keys():
+            filename = os.path.basename(fullname)
+            os.makedirs(new_dir + os.path.dirname(fullname))
+            shutil.copy(old_dir + fullname, new_dir + fullname)
+            misc.gitRemove(old_dir,
+                           fullname,
+                           "remove attachment " + filename)
+            misc.gitAddCommit(new_dir,
+                              fullname,
+                              "attachment " + filename)
+
+        # Delete old note.
+        self.deleteNote()
+        
+        # Move to new notebook.
+        # FIXME: If this gets move to a new notebook, then back to the old
+        #  notebook it will appear as completely new note. However if we
+        #  don't do this then the version history of the note will get all
+        #  messed up.
+        self.notebook = new_notebook
+        self.filename = "note_" + str(uuid.uuid1()) + ".xml"
+        self.fullname = self.notebook.getDirectory() + self.filename
+        self.versions = []
+            
+        # Replay history in the new notebook.
+        for content in note_contents:
+            self.saveNote(content)
+
+    @logger.logFn
+    def rename(self, new_name):
+        self.name = str(new_name)
+        self.setText(new_name)
+
+        # Load latest note content and save with new name creating a git commit.
+        note_content = self.loadNoteContent(self.getLatestVersionNumber())
+        note_content.setName(self.name)
+        self.saveNote(note_content)
 
     @logger.logFn            
     def saveNote(self, note_content):
