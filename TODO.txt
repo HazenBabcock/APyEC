@@ -30,3 +30,5 @@
 15. Can edit keywords in the list view.
 
 16. Keyword auto-completer.
+
+17. Hovering over notebooks and notes brings up a useful tooltip.
