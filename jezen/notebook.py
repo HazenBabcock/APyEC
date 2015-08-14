@@ -91,6 +91,31 @@ class NotebookChooser(QtGui.QDialog):
         self.accept()
         
 
+class NotebookListViewDelegate(QtGui.QStyledItemDelegate):
+    """
+    A custom look for each notebook item.
+    """
+    def __init__(self, model, proxy_model):
+        QtGui.QStyledItemDelegate.__init__(self)
+        self.model = model
+        self.proxy_model = proxy_model
+
+    def itemFromProxyIndex(self, proxy_index):
+        source_index = self.proxy_model.mapToSource(proxy_index)
+        return self.model.itemFromIndex(source_index)
+    
+    def paint(self, painter, option, index):
+        notebook = self.itemFromProxyIndex(index)
+
+        # Draw correct background.
+        style = option.widget.style()
+        style.drawControl(QtGui.QStyle.CE_ItemViewItem, option, painter, option.widget)
+
+        # Draw text.
+        painter.drawText(option.rect, QtCore.Qt.AlignLeft, " " + notebook.getName())
+        painter.drawText(option.rect, QtCore.Qt.AlignRight, "(" + str(notebook.getNumberNotes()) + " notes) ")
+
+        
 class NotebookMVC(QtGui.QListView):
     """
     Encapsulates a list view specialized for notebooks and it's associated model.
@@ -103,6 +128,7 @@ class NotebookMVC(QtGui.QListView):
     def __init__(self, parent = None):
         QtGui.QListView.__init__(self, parent)
         self.right_clicked = None
+
         self.setSelectionMode(QtGui.QAbstractItemView.ExtendedSelection)
 
         # Context menu
@@ -128,6 +154,9 @@ class NotebookMVC(QtGui.QListView):
         self.notebook_proxy_model.setSourceModel(self.notebook_model)
         self.setModel(self.notebook_proxy_model)
 
+        # Rendering
+        self.setItemDelegate(NotebookListViewDelegate(self.notebook_model, self.notebook_proxy_model))
+        
         # Get selection changes.
         self.selectionModel().selectionChanged.connect(self.handleSelectionChange)
 
@@ -250,6 +279,7 @@ class NotebookStandardItem(QtGui.QStandardItem):
         self.directory = directory + "nb_"
         self.git_log = []
         self.name = None
+        self.number_notes = 0
         self.number_unsaved = 0
         self.uuid = None
 
@@ -301,6 +331,13 @@ class NotebookStandardItem(QtGui.QStandardItem):
                 versions.append(commit[0])
         return list(reversed(versions))
 
+    def getNumberNotes(self):
+        return self.number_notes
+
+    @logger.logFn
+    def incNumberNotes(self, inc):
+        self.number_notes += inc
+        
     @logger.logFn
     def incNumberUnsaved(self):
         self.number_unsaved += 1
@@ -332,6 +369,10 @@ class NotebookStandardItem(QtGui.QStandardItem):
 
         misc.pSaveXML(self.directory + "notebook.xml", xml)
         misc.gitAddCommit(self.directory, self.directory + "notebook.xml", "rename notebook.")
+
+    @logger.logFn
+    def setNumberNotes(self, number_notes):
+        self.number_notes = number_notes
         
 
 class NotebookStandardItemModel(QtGui.QStandardItemModel):

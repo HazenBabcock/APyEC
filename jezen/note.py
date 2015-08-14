@@ -328,11 +328,13 @@ class NoteMVC(QtGui.QListView):
         """
         Loads all the notes in a notebook.
         """
-        for n_file in glob.glob(notebook.getDirectory() + "note_*.xml"):
+        note_files = glob.glob(notebook.getDirectory() + "note_*.xml")
+        for n_file in note_files:
             a_note = NoteStandardItem(notebook, self.noteKeywordsChanged, note_file = n_file)
             self.notes[a_note.getFileName()] = a_note
             self.note_model.appendRow(a_note)
 
+        notebook.setNumberNotes(len(note_files))
         self.note_proxy_model.sort(0)
 
     @logger.logFn        
