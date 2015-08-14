@@ -161,6 +161,49 @@ class NoteContent(object):
         self.unsaved_content = new_content
         
 
+class NoteListViewDelegate(QtGui.QStyledItemDelegate):
+    """
+    A custom look for each note item.
+    """
+    def __init__(self, model, proxy_model):
+        QtGui.QStyledItemDelegate.__init__(self)
+        self.model = model
+        self.proxy_model = proxy_model
+
+    def itemFromProxyIndex(self, proxy_index):
+        source_index = self.proxy_model.mapToSource(proxy_index)
+        return self.model.itemFromIndex(source_index)
+    
+    def paint(self, painter, option, index):
+        note = self.itemFromProxyIndex(index)
+
+        # Draw correct background.
+        style = option.widget.style()
+        style.drawControl(QtGui.QStyle.CE_ItemViewItem, option, painter, option.widget)
+
+        # Draw text.
+        upper_rect = QtCore.QRect(option.rect.left(),
+                                  option.rect.top(),
+                                  option.rect.width(),
+                                  option.rect.height()/2)
+        
+        lower_rect = QtCore.QRect(option.rect.left(),
+                                  option.rect.top() + option.rect.height()/2,
+                                  option.rect.width(),
+                                  option.rect.height()/2)
+        
+        painter.drawText(upper_rect, QtCore.Qt.AlignLeft, " " + note.getName())
+        painter.drawText(upper_rect, QtCore.Qt.AlignRight, "(" + str(note.getNumberOfVersions()) + " versions) ")
+        painter.drawText(lower_rect,
+                         QtCore.Qt.AlignLeft,
+                         " created on " + datetime.datetime.strftime(note.date_created, '%Y-%m-%d'))
+
+    def sizeHint(self, option, index):
+        result = QtGui.QStyledItemDelegate.sizeHint(self, option, index)
+        result.setHeight(2 * result.height())
+        return result
+        
+    
 class NoteMVC(QtGui.QListView):
     """
     Encapsulates a list view specialized for notes and it's associated model.
@@ -212,6 +255,9 @@ class NoteMVC(QtGui.QListView):
         self.note_proxy_model.setSourceModel(self.note_model)
         self.setModel(self.note_proxy_model)
 
+        # Rendering
+        self.setItemDelegate(NoteListViewDelegate(self.note_model, self.note_proxy_model))
+        
         # Get selection changes.
         self.selectionModel().selectionChanged.connect(self.handleSelectionChange)
 
