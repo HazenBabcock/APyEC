@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'editor.ui'
 #
-# Created: Sat Aug  8 15:58:27 2015
+# Created: Thu Aug 13 21:01:17 2015
 #      by: PyQt4 UI code generator 4.11.3
 #
 # WARNING! All changes made in this file will be lost!
@@ -28,6 +28,8 @@ class Ui_Dialog(object):
         Dialog.setObjectName(_fromUtf8("Dialog"))
         Dialog.resize(1177, 850)
         self.verticalLayout_2 = QtGui.QVBoxLayout(Dialog)
+        self.verticalLayout_2.setSpacing(2)
+        self.verticalLayout_2.setMargin(2)
         self.verticalLayout_2.setObjectName(_fromUtf8("verticalLayout_2"))
         self.viewEditSplitter = QtGui.QSplitter(Dialog)
         self.viewEditSplitter.setOrientation(QtCore.Qt.Horizontal)
@@ -50,6 +52,8 @@ class Ui_Dialog(object):
         self.markdownGroupBox.setSizePolicy(sizePolicy)
         self.markdownGroupBox.setObjectName(_fromUtf8("markdownGroupBox"))
         self.verticalLayout_5 = QtGui.QVBoxLayout(self.markdownGroupBox)
+        self.verticalLayout_5.setSpacing(2)
+        self.verticalLayout_5.setContentsMargins(2, -1, 2, 2)
         self.verticalLayout_5.setObjectName(_fromUtf8("verticalLayout_5"))
         self.noteTextEdit = QtGui.QTextEdit(self.markdownGroupBox)
         sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.MinimumExpanding, QtGui.QSizePolicy.MinimumExpanding)
@@ -57,6 +61,8 @@ class Ui_Dialog(object):
         sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(self.noteTextEdit.sizePolicy().hasHeightForWidth())
         self.noteTextEdit.setSizePolicy(sizePolicy)
+        self.noteTextEdit.setFrameShape(QtGui.QFrame.Box)
+        self.noteTextEdit.setFrameShadow(QtGui.QFrame.Plain)
         self.noteTextEdit.setObjectName(_fromUtf8("noteTextEdit"))
         self.verticalLayout_5.addWidget(self.noteTextEdit)
         self.keywordSplitter = QtGui.QSplitter(self.editSplitter)
@@ -70,6 +76,8 @@ class Ui_Dialog(object):
         self.attachmentsGroupBox.setSizePolicy(sizePolicy)
         self.attachmentsGroupBox.setObjectName(_fromUtf8("attachmentsGroupBox"))
         self.verticalLayout_4 = QtGui.QVBoxLayout(self.attachmentsGroupBox)
+        self.verticalLayout_4.setSpacing(2)
+        self.verticalLayout_4.setContentsMargins(2, -1, 2, 2)
         self.verticalLayout_4.setObjectName(_fromUtf8("verticalLayout_4"))
         self.attachmentsMVC = AttachmentsMVC(self.attachmentsGroupBox)
         sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.MinimumExpanding)
@@ -77,6 +85,8 @@ class Ui_Dialog(object):
         sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(self.attachmentsMVC.sizePolicy().hasHeightForWidth())
         self.attachmentsMVC.setSizePolicy(sizePolicy)
+        self.attachmentsMVC.setFrameShape(QtGui.QFrame.Box)
+        self.attachmentsMVC.setFrameShadow(QtGui.QFrame.Plain)
         self.attachmentsMVC.setObjectName(_fromUtf8("attachmentsMVC"))
         self.verticalLayout_4.addWidget(self.attachmentsMVC)
         self.horizontalLayout = QtGui.QHBoxLayout()
@@ -96,6 +106,8 @@ class Ui_Dialog(object):
         self.keywordEditGroupBox.setMaximumSize(QtCore.QSize(16777215, 16777215))
         self.keywordEditGroupBox.setObjectName(_fromUtf8("keywordEditGroupBox"))
         self.verticalLayout = QtGui.QVBoxLayout(self.keywordEditGroupBox)
+        self.verticalLayout.setSpacing(2)
+        self.verticalLayout.setContentsMargins(2, -1, 2, 2)
         self.verticalLayout.setObjectName(_fromUtf8("verticalLayout"))
         self.keywordEditorMVC = KeywordEditorMVC(self.keywordEditGroupBox)
         sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.MinimumExpanding)
@@ -103,6 +115,8 @@ class Ui_Dialog(object):
         sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(self.keywordEditorMVC.sizePolicy().hasHeightForWidth())
         self.keywordEditorMVC.setSizePolicy(sizePolicy)
+        self.keywordEditorMVC.setFrameShape(QtGui.QFrame.Box)
+        self.keywordEditorMVC.setFrameShadow(QtGui.QFrame.Plain)
         self.keywordEditorMVC.setObjectName(_fromUtf8("keywordEditorMVC"))
         self.verticalLayout.addWidget(self.keywordEditorMVC)
         self.horizontalLayout_3 = QtGui.QHBoxLayout()

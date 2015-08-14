@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'jezen.ui'
 #
-# Created: Thu Aug 13 18:31:15 2015
+# Created: Thu Aug 13 21:00:25 2015
 #      by: PyQt4 UI code generator 4.11.3
 #
 # WARNING! All changes made in this file will be lost!
@@ -30,6 +30,8 @@ class Ui_MainWindow(object):
         self.centralwidget = QtGui.QWidget(MainWindow)
         self.centralwidget.setObjectName(_fromUtf8("centralwidget"))
         self.horizontalLayout_3 = QtGui.QHBoxLayout(self.centralwidget)
+        self.horizontalLayout_3.setSpacing(2)
+        self.horizontalLayout_3.setMargin(2)
         self.horizontalLayout_3.setObjectName(_fromUtf8("horizontalLayout_3"))
         self.mainSplitter = QtGui.QSplitter(self.centralwidget)
         sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Preferred)
@@ -58,6 +60,7 @@ class Ui_MainWindow(object):
         self.notebookGroupBox.setSizePolicy(sizePolicy)
         self.notebookGroupBox.setObjectName(_fromUtf8("notebookGroupBox"))
         self.verticalLayout = QtGui.QVBoxLayout(self.notebookGroupBox)
+        self.verticalLayout.setContentsMargins(2, 9, 2, 2)
         self.verticalLayout.setObjectName(_fromUtf8("verticalLayout"))
         self.notebookMVC = NotebookMVC(self.notebookGroupBox)
         sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Preferred, QtGui.QSizePolicy.Expanding)
@@ -65,6 +68,8 @@ class Ui_MainWindow(object):
         sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(self.notebookMVC.sizePolicy().hasHeightForWidth())
         self.notebookMVC.setSizePolicy(sizePolicy)
+        self.notebookMVC.setFrameShape(QtGui.QFrame.Box)
+        self.notebookMVC.setFrameShadow(QtGui.QFrame.Plain)
         self.notebookMVC.setObjectName(_fromUtf8("notebookMVC"))
         self.verticalLayout.addWidget(self.notebookMVC)
         self.keywordGroupBox = QtGui.QGroupBox(self.notebookSplitter)
@@ -75,6 +80,7 @@ class Ui_MainWindow(object):
         self.keywordGroupBox.setSizePolicy(sizePolicy)
         self.keywordGroupBox.setObjectName(_fromUtf8("keywordGroupBox"))
         self.verticalLayout_3 = QtGui.QVBoxLayout(self.keywordGroupBox)
+        self.verticalLayout_3.setContentsMargins(2, -1, 2, 2)
         self.verticalLayout_3.setObjectName(_fromUtf8("verticalLayout_3"))
         self.keywordChooserMVC = KeywordChooserMVC(self.keywordGroupBox)
         sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Preferred, QtGui.QSizePolicy.Expanding)
@@ -82,6 +88,8 @@ class Ui_MainWindow(object):
         sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(self.keywordChooserMVC.sizePolicy().hasHeightForWidth())
         self.keywordChooserMVC.setSizePolicy(sizePolicy)
+        self.keywordChooserMVC.setFrameShape(QtGui.QFrame.Box)
+        self.keywordChooserMVC.setFrameShadow(QtGui.QFrame.Plain)
         self.keywordChooserMVC.setObjectName(_fromUtf8("keywordChooserMVC"))
         self.verticalLayout_3.addWidget(self.keywordChooserMVC)
         self.notesGroupBox = QtGui.QGroupBox(self.mainSplitter)
@@ -92,6 +100,8 @@ class Ui_MainWindow(object):
         self.notesGroupBox.setSizePolicy(sizePolicy)
         self.notesGroupBox.setObjectName(_fromUtf8("notesGroupBox"))
         self.verticalLayout_2 = QtGui.QVBoxLayout(self.notesGroupBox)
+        self.verticalLayout_2.setSpacing(2)
+        self.verticalLayout_2.setContentsMargins(2, -1, 2, 2)
         self.verticalLayout_2.setObjectName(_fromUtf8("verticalLayout_2"))
         self.noteMVC = NoteMVC(self.notesGroupBox)
         sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Preferred, QtGui.QSizePolicy.Expanding)
@@ -99,6 +109,8 @@ class Ui_MainWindow(object):
         sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(self.noteMVC.sizePolicy().hasHeightForWidth())
         self.noteMVC.setSizePolicy(sizePolicy)
+        self.noteMVC.setFrameShape(QtGui.QFrame.Box)
+        self.noteMVC.setFrameShadow(QtGui.QFrame.Plain)
         self.noteMVC.setObjectName(_fromUtf8("noteMVC"))
         self.verticalLayout_2.addWidget(self.noteMVC)
         self.horizontalLayout_4 = QtGui.QHBoxLayout()
