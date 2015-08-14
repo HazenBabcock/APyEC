@@ -56,6 +56,7 @@ class Editor(QtGui.QDialog):
         
         self.viewer = Viewer(self.ui.noteGroupBox)
         layout = QtGui.QHBoxLayout()
+        layout.setMargin(2)
         layout.addWidget(self.viewer)
         self.ui.noteGroupBox.setLayout(layout)
         self.viewer.newNoteEdit(note, note_content)
