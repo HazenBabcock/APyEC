@@ -28,7 +28,7 @@ class Editor(QtGui.QDialog):
         QtGui.QDialog.__init__(self, parent)
         self.note = note
         self.note_content = note_content
-        self.settings = QtCore.QSettings("jezen", "jezen")
+        self.settings = QtCore.QSettings("apyec", "apyec")
 
         self.attach_directory = str(self.settings.value("attach_directory", ".").toString())
         

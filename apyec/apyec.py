@@ -5,7 +5,7 @@ import sys
 
 from PyQt4 import QtCore, QtGui
 
-import jezen_ui as jezenUi
+import apyec_ui as apyecUi
 
 import editor
 import logger
@@ -13,18 +13,18 @@ import misc
 import notebook
 
 
-class Jezen(QtGui.QMainWindow):
+class APyEC(QtGui.QMainWindow):
 
     def __init__(self, parent = None):
         QtGui.QMainWindow.__init__(self, parent)
         self.email = ""
-        self.settings = QtCore.QSettings("jezen", "jezen")
+        self.settings = QtCore.QSettings("apyec", "apyec")
         self.username = ""
 
         logger.startLogging("./logs/")
             
         # Load UI
-        self.ui = jezenUi.Ui_MainWindow()
+        self.ui = apyecUi.Ui_MainWindow()
         self.ui.setupUi(self)
 
         self.viewer = editor.Viewer(self.ui.noteGroupBox)
@@ -163,7 +163,7 @@ class Jezen(QtGui.QMainWindow):
 if (__name__ == "__main__"):
     app = QtGui.QApplication(sys.argv)
 
-    window = Jezen()
+    window = APyEC()
     window.show()
     app.exec_()
 

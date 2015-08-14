@@ -32,7 +32,7 @@ def logFn(fn):
 def startLogging(directory):
     global a_logger
 
-    settings = QtCore.QSettings("jezen", "jezen")
+    settings = QtCore.QSettings("apyec", "apyec")
     index = settings.value("logging_file_index", 1).toInt()[0]
     new_index = index + 1
     if (new_index > 100):
@@ -40,14 +40,14 @@ def startLogging(directory):
     settings.setValue("logging_file_index", new_index)
 
     # Initialize logger.
-    a_logger = logging.getLogger("jezen")
+    a_logger = logging.getLogger("apyec")
     a_logger.setLevel(logging.DEBUG)
 
     # Create formatter.
     rt_formatter = logging.Formatter('%(asctime)s:%(name)s:%(levelname)s:%(message)s')
 
     # Rotating file handle for saving output.
-    log_filename = directory + "jezen_log" + str(index) + ".out"
+    log_filename = directory + "apyec_log" + str(index) + ".out"
     try:
         rf_handler = logging.handlers.RotatingFileHandler(log_filename,
                                                           maxBytes = 200000,
