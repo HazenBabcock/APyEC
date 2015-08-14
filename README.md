@@ -1,4 +1,4 @@
-### apyec ###
+### APyEC ###
 Another Python Evernote Clone.
 
 ### Dependencies ###
