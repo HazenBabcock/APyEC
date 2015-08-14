@@ -112,7 +112,8 @@ class NoteContent(object):
 
     @logger.logFn
     def getDate(self):
-        return datetime.datetime.strptime(self.date, '%Y-%m-%d %H:%M:%S.%f')
+        if self.date is not None:
+            return datetime.datetime.strptime(self.date, '%Y-%m-%d %H:%M:%S.%f')
     
     @logger.logFn
     def getKeywords(self):

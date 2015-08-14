@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'viewer.ui'
 #
-# Created: Mon Aug  3 20:45:56 2015
+# Created: Fri Aug 14 07:43:02 2015
 #      by: PyQt4 UI code generator 4.11.3
 #
 # WARNING! All changes made in this file will be lost!
@@ -26,17 +26,22 @@ except AttributeError:
 class Ui_Form(object):
     def setupUi(self, Form):
         Form.setObjectName(_fromUtf8("Form"))
-        Form.resize(288, 322)
+        Form.resize(495, 610)
         self.verticalLayout = QtGui.QVBoxLayout(Form)
+        self.verticalLayout.setContentsMargins(0, 5, 0, 0)
         self.verticalLayout.setObjectName(_fromUtf8("verticalLayout"))
-        self.webViewWidget = QtGui.QWidget(Form)
+        self.keywordLabel = QtGui.QLabel(Form)
+        self.keywordLabel.setObjectName(_fromUtf8("keywordLabel"))
+        self.verticalLayout.addWidget(self.keywordLabel)
+        self.webViewFrame = QtGui.QFrame(Form)
         sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Preferred, QtGui.QSizePolicy.MinimumExpanding)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
-        sizePolicy.setHeightForWidth(self.webViewWidget.sizePolicy().hasHeightForWidth())
-        self.webViewWidget.setSizePolicy(sizePolicy)
-        self.webViewWidget.setObjectName(_fromUtf8("webViewWidget"))
-        self.verticalLayout.addWidget(self.webViewWidget)
+        sizePolicy.setHeightForWidth(self.webViewFrame.sizePolicy().hasHeightForWidth())
+        self.webViewFrame.setSizePolicy(sizePolicy)
+        self.webViewFrame.setFrameShape(QtGui.QFrame.Box)
+        self.webViewFrame.setObjectName(_fromUtf8("webViewFrame"))
+        self.verticalLayout.addWidget(self.webViewFrame)
         self.versionWidget = QtGui.QWidget(Form)
         sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Preferred, QtGui.QSizePolicy.Minimum)
         sizePolicy.setHorizontalStretch(0)
@@ -58,6 +63,9 @@ class Ui_Form(object):
         self.versionComboBox = QtGui.QComboBox(self.versionWidget)
         self.versionComboBox.setObjectName(_fromUtf8("versionComboBox"))
         self.horizontalLayout.addWidget(self.versionComboBox)
+        self.dateLabel = QtGui.QLabel(self.versionWidget)
+        self.dateLabel.setObjectName(_fromUtf8("dateLabel"))
+        self.horizontalLayout.addWidget(self.dateLabel)
         spacerItem = QtGui.QSpacerItem(374, 20, QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Minimum)
         self.horizontalLayout.addItem(spacerItem)
         self.editPushButton = QtGui.QPushButton(self.versionWidget)
@@ -70,6 +78,8 @@ class Ui_Form(object):
 
     def retranslateUi(self, Form):
         Form.setWindowTitle(_translate("Form", "Form", None))
+        self.keywordLabel.setText(_translate("Form", "Keywords:", None))
         self.versionLabel.setText(_translate("Form", "Versions:", None))
+        self.dateLabel.setText(_translate("Form", "Date", None))
         self.editPushButton.setText(_translate("Form", "Edit", None))
 

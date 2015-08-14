@@ -4,6 +4,7 @@
    :synopsis: The editor (and viewer) for notes.
 """
 
+import datetime
 import os
 
 from PyQt4 import QtCore, QtGui, QtWebKit
@@ -133,13 +134,15 @@ class Viewer(QtGui.QWidget):
         self.web_viewer.page().setLinkDelegationPolicy(QtWebKit.QWebPage.DelegateAllLinks)
 
         layout = QtGui.QHBoxLayout()
+        layout.setMargin(2)
         layout.addWidget(self.web_viewer)
-        self.ui.webViewWidget.setLayout(layout)
+        self.ui.webViewFrame.setLayout(layout)
 
         self.ui.editPushButton.clicked.connect(self.handleEditButton)
         self.ui.versionComboBox.currentIndexChanged.connect(self.handleVersionChange)
         self.web_viewer.linkClicked.connect(self.handleLinkClicked)
 
+        self.ui.keywordLabel.hide()
         self.ui.versionWidget.hide()
 
     @logger.logFn        
@@ -160,6 +163,14 @@ class Viewer(QtGui.QWidget):
     def handleVersionChange(self, new_index):
         self.note_content = self.note.loadNoteContent(new_index)
         self.updateWebView(self.note_content.getContent())
+        self.ui.keywordLabel.setText("Keywords: " + ", ".join(self.note_content.getKeywords()))
+
+        # Need to check that date is valid as newly created notes won't have a date.
+        date = self.note_content.getDate()
+        if date is not None:
+            self.ui.dateLabel.setText(datetime.datetime.strftime(date, '%Y-%m-%d %H:%M:%S'))
+        else:
+            self.ui.dateLabel.setText("")
 
     @logger.logFn
     def newNoteView(self, new_note):
@@ -175,11 +186,10 @@ class Viewer(QtGui.QWidget):
         self.base_url = QtCore.QUrl.fromLocalFile(self.note.getNotebook().getDirectory() + "notebook.xml")
         
         # Update content.
-        n_versions = self.note.getNumberOfVersions()
-        self.note_content = self.note.loadNoteContent(n_versions - 1)
-        self.updateWebView(self.note_content.getContent())
+        self.handleVersionChange(self.note.getLatestVersionNumber())
 
         # Fill in version combo box.
+        n_versions = self.note.getNumberOfVersions()
         if (n_versions > 0):
             self.ui.versionComboBox.currentIndexChanged.disconnect()
             self.ui.versionComboBox.clear()
@@ -189,10 +199,12 @@ class Viewer(QtGui.QWidget):
             self.ui.versionComboBox.currentIndexChanged.connect(self.handleVersionChange)
             self.ui.versionComboBox.show()
         else:
+            self.ui.versionLabel.hide()
             self.ui.versionComboBox.hide()
             
         # Show combo box and edit button (if they are hidden).
         self.ui.versionWidget.show()
+        self.ui.keywordLabel.show()
 
     @logger.logFn
     def newNoteEdit(self, new_note, note_content):

@@ -14,13 +14,35 @@
    <string>Form</string>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
+   <property name="leftMargin">
+    <number>0</number>
+   </property>
+   <property name="topMargin">
+    <number>5</number>
+   </property>
+   <property name="rightMargin">
+    <number>0</number>
+   </property>
+   <property name="bottomMargin">
+    <number>0</number>
+   </property>
    <item>
-    <widget class="QWidget" name="webViewWidget" native="true">
+    <widget class="QLabel" name="keywordLabel">
+     <property name="text">
+      <string>Keywords:</string>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <widget class="QFrame" name="webViewFrame">
      <property name="sizePolicy">
       <sizepolicy hsizetype="Preferred" vsizetype="MinimumExpanding">
        <horstretch>0</horstretch>
        <verstretch>0</verstretch>
       </sizepolicy>
+     </property>
+     <property name="frameShape">
+      <enum>QFrame::Box</enum>
      </property>
     </widget>
    </item>
@@ -48,6 +70,13 @@
       </item>
       <item>
        <widget class="QComboBox" name="versionComboBox"/>
+      </item>
+      <item>
+       <widget class="QLabel" name="dateLabel">
+        <property name="text">
+         <string>Date</string>
+        </property>
+       </widget>
       </item>
       <item>
        <spacer name="horizontalSpacer">
