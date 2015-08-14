@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file 'jezen.ui'
+# Form implementation generated from reading ui file 'apyec.ui'
 #
-# Created: Thu Aug 13 21:00:25 2015
+# Created: Fri Aug 14 18:17:04 2015
 #      by: PyQt4 UI code generator 4.11.3
 #
 # WARNING! All changes made in this file will be lost!
@@ -164,7 +164,7 @@ class Ui_MainWindow(object):
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
 
     def retranslateUi(self, MainWindow):
-        MainWindow.setWindowTitle(_translate("MainWindow", "Jezen", None))
+        MainWindow.setWindowTitle(_translate("MainWindow", "APyEC", None))
         self.notebookGroupBox.setTitle(_translate("MainWindow", "Note Books", None))
         self.keywordGroupBox.setTitle(_translate("MainWindow", "Key Words", None))
         self.notesGroupBox.setTitle(_translate("MainWindow", "Notes", None))
