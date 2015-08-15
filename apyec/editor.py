@@ -12,6 +12,7 @@ from PyQt4 import QtCore, QtGui, QtWebKit
 import editor_ui as editorUi
 import viewer_ui as viewerUi
 
+import converters
 import logger
 
 #
@@ -61,9 +62,20 @@ class Editor(QtGui.QDialog):
         self.ui.noteGroupBox.setLayout(layout)
         self.viewer.newNoteEdit(note, note_content)
 
+        # Set up the content type combo box.
+        for content_type in converters.content_types:
+            self.ui.contentTypeComboBox.addItem(content_type)
+        index = self.ui.contentTypeComboBox.findText(note_content.getContentType())
+        if index >= 0:
+            self.ui.contentTypeComboBox.setCurrentIndex(index)
+
+        # Set up NoteTextEdit
+        self.ui.noteTextEdit.setNoteContent(self.note_content)
+        
         # Connect signals.
         self.ui.attachUploadButton.clicked.connect(self.handleAttachUpload)
         self.ui.closeButton.clicked.connect(self.close)
+        self.ui.contentTypeComboBox.currentIndexChanged[str].connect(self.handleContentTypeChange)
         self.ui.keywordAddPushButton.clicked.connect(self.handleKeywordAdd)
         self.ui.noteTextEdit.textChanged.connect(self.handleTextChanged)
         self.ui.saveButton.clicked.connect(self.handleSave)
@@ -75,7 +87,6 @@ class Editor(QtGui.QDialog):
         self.settings.setValue("edit_splitter", self.ui.editSplitter.saveState())
         self.settings.setValue("keyword_splitter", self.ui.keywordSplitter.saveState())
         self.settings.setValue("view_edit_splitter", self.ui.viewEditSplitter.saveState())
-
 
     @logger.logFn        
     def getContent(self):
@@ -92,6 +103,10 @@ class Editor(QtGui.QDialog):
             self.attach_directory = os.path.dirname(upload_filename)
             self.ui.attachmentsMVC.addAttachment(upload_filename)
 
+    @logger.logFn
+    def handleContentTypeChange(self, new_content_type):
+        self.note_content.setContentType(new_content_type)
+        
     @logger.logFn
     def handleKeywordAdd(self, boolean):
         keyword_text = str(self.ui.keywordLineEdit.text())
@@ -153,12 +168,15 @@ class Viewer(QtGui.QWidget):
     @logger.logFn        
     def handleLinkClicked(self, url):
         url_string = url.toString()
-        if (url_string[:4] == "note"):
-            [note_name, note_version] = url.toString().split("&v=")
+        print url_string
+        if (url_string[:7] == "apyrec:"):
+            [note_name, note_version] = url_string[8:].split("&v=")
+            print note_name, note_version
             self.noteLinkClicked.emit(note_name, int(note_version))
-        else:
-            print url_string
+        elif (url_string[:5] == "file:"):
             self.web_viewer.load(url)
+        else:
+            print "link not followed."
 
     @logger.logFn
     def handleVersionChange(self, new_index):
@@ -215,6 +233,7 @@ class Viewer(QtGui.QWidget):
         self.note = new_note
         self.note_content = note_content
         self.base_url = QtCore.QUrl.fromLocalFile(self.note.getNotebook().getDirectory() + "notebook.xml")
+        self.updateWebView(self.note_content.getContent())
 
     @logger.logFn        
     def updateWebView(self, content):

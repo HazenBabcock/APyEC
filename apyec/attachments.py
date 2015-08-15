@@ -51,13 +51,7 @@ class AttachmentsMVC(QtGui.QListView):
     def handleCopyLink(self, boolean):
         clipboard = QtGui.QApplication.clipboard()
         an_attachment = self.attachment_model.itemFromIndex(self.right_clicked)
-        extension = os.path.splitext(an_attachment.getFilename())[1].lower()
-
-        # Check if this is an image file.
-        if extension in [".bmp", ".gif", ".jpg", ".png", ".tif", ".tiff"]:
-            clipboard.setText("![" + an_attachment.getFilename() + "](" + an_attachment.getFullname() + ")")
-        else:
-            clipboard.setText("[" + an_attachment.getFilename() + "](" + an_attachment.getFullname() + ")")            
+        clipboard.setText(self.note_content.formatLink(an_attachment.getFilename(), an_attachment.getFullname()))
 
     @logger.logFn        
     def handleDeleteAttachment(self, boolean):

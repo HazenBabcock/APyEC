@@ -6,7 +6,6 @@
 
 import datetime
 import glob
-import markdown
 import os
 import uuid
 import shutil
@@ -15,6 +14,7 @@ from PyQt4 import QtCore, QtGui
 
 from xml.etree import ElementTree
 
+import converters
 import logger
 import misc
 
@@ -33,8 +33,9 @@ class NoteContent(object):
         self.content = ""
         self.content_type = "markdown"
         self.date = None
-        self.html_converter = markdown.markdown
+        self.html_converter = None
         self.keywords = []
+        self.link_converter = None
         self.name = note.getName()
         self.note = note
         self.unsaved_content = None
@@ -55,6 +56,8 @@ class NoteContent(object):
             if keyword_xml is not None:
                 for xml in keyword_xml:
                     self.keywords.append(xml.text)
+
+        self.setConverters(self.content_type)
 
     @logger.logFn        
     def addAttachment(self, attachment_fullname):
@@ -98,6 +101,10 @@ class NoteContent(object):
     def convertToHTML(self, content):
         return self.html_converter(content)
 
+    @logger.logFn
+    def formatLink(self, link_name, link_url):
+        return self.link_converter(link_name, link_url)
+    
     @logger.logFn    
     def getAttachments(self):
         return self.attachments
@@ -149,6 +156,16 @@ class NoteContent(object):
     def setContent(self, new_content):
         self.content = new_content
 
+    @logger.logFn
+    def setContentType(self, content_type):
+        self.content_type = str(content_type)
+        self.setConverters(self.content_type)
+        
+    @logger.logFn
+    def setConverters(self, content_type):
+        self.html_converter = converters.getHTMLConverter(content_type)
+        self.link_converter = converters.getLinkConverter(content_type)
+                         
     @logger.logFn
     def setKeywords(self, new_keywords):
         self.keywords = new_keywords
@@ -289,11 +306,12 @@ class NoteMVC(QtGui.QListView):
         
     @logger.logFn
     def handleCopyLink(self, boolean):
+        """
+        This returns the filename and location which can be used to create a hyperlink.
+        """
         clipboard = QtGui.QApplication.clipboard()
         a_note = self.noteFromProxyIndex(self.right_clicked)
-
-        # FIXME: This should depend on note content type.
-        clipboard.setText("[" + a_note.getName() + "](" + a_note.getLink() + ")")
+        clipboard.setText("<note_link><split>" + a_note.getName() + "<split>" + a_note.getLink() + "<split></note_link>")
 
     @logger.logFn
     def handleCopyNote(self, boolean):

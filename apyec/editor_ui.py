@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'editor.ui'
 #
-# Created: Thu Aug 13 21:01:17 2015
+# Created: Fri Aug 14 21:37:11 2015
 #      by: PyQt4 UI code generator 4.11.3
 #
 # WARNING! All changes made in this file will be lost!
@@ -27,10 +27,8 @@ class Ui_Dialog(object):
     def setupUi(self, Dialog):
         Dialog.setObjectName(_fromUtf8("Dialog"))
         Dialog.resize(1177, 850)
-        self.verticalLayout_2 = QtGui.QVBoxLayout(Dialog)
-        self.verticalLayout_2.setSpacing(2)
-        self.verticalLayout_2.setMargin(2)
-        self.verticalLayout_2.setObjectName(_fromUtf8("verticalLayout_2"))
+        self.verticalLayout_3 = QtGui.QVBoxLayout(Dialog)
+        self.verticalLayout_3.setObjectName(_fromUtf8("verticalLayout_3"))
         self.viewEditSplitter = QtGui.QSplitter(Dialog)
         self.viewEditSplitter.setOrientation(QtCore.Qt.Horizontal)
         self.viewEditSplitter.setObjectName(_fromUtf8("viewEditSplitter"))
@@ -44,7 +42,12 @@ class Ui_Dialog(object):
         self.editSplitter = QtGui.QSplitter(self.viewEditSplitter)
         self.editSplitter.setOrientation(QtCore.Qt.Vertical)
         self.editSplitter.setObjectName(_fromUtf8("editSplitter"))
-        self.markdownGroupBox = QtGui.QGroupBox(self.editSplitter)
+        self.widget = QtGui.QWidget(self.editSplitter)
+        self.widget.setObjectName(_fromUtf8("widget"))
+        self.verticalLayout_2 = QtGui.QVBoxLayout(self.widget)
+        self.verticalLayout_2.setMargin(0)
+        self.verticalLayout_2.setObjectName(_fromUtf8("verticalLayout_2"))
+        self.markdownGroupBox = QtGui.QGroupBox(self.widget)
         sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Preferred, QtGui.QSizePolicy.MinimumExpanding)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
@@ -55,7 +58,7 @@ class Ui_Dialog(object):
         self.verticalLayout_5.setSpacing(2)
         self.verticalLayout_5.setContentsMargins(2, -1, 2, 2)
         self.verticalLayout_5.setObjectName(_fromUtf8("verticalLayout_5"))
-        self.noteTextEdit = QtGui.QTextEdit(self.markdownGroupBox)
+        self.noteTextEdit = NoteTextEdit(self.markdownGroupBox)
         sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.MinimumExpanding, QtGui.QSizePolicy.MinimumExpanding)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
@@ -63,8 +66,21 @@ class Ui_Dialog(object):
         self.noteTextEdit.setSizePolicy(sizePolicy)
         self.noteTextEdit.setFrameShape(QtGui.QFrame.Box)
         self.noteTextEdit.setFrameShadow(QtGui.QFrame.Plain)
+        self.noteTextEdit.setTabStopWidth(40)
         self.noteTextEdit.setObjectName(_fromUtf8("noteTextEdit"))
         self.verticalLayout_5.addWidget(self.noteTextEdit)
+        self.verticalLayout_2.addWidget(self.markdownGroupBox)
+        self.horizontalLayout_4 = QtGui.QHBoxLayout()
+        self.horizontalLayout_4.setObjectName(_fromUtf8("horizontalLayout_4"))
+        spacerItem = QtGui.QSpacerItem(40, 20, QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Minimum)
+        self.horizontalLayout_4.addItem(spacerItem)
+        self.contentTypeLabel = QtGui.QLabel(self.widget)
+        self.contentTypeLabel.setObjectName(_fromUtf8("contentTypeLabel"))
+        self.horizontalLayout_4.addWidget(self.contentTypeLabel)
+        self.contentTypeComboBox = QtGui.QComboBox(self.widget)
+        self.contentTypeComboBox.setObjectName(_fromUtf8("contentTypeComboBox"))
+        self.horizontalLayout_4.addWidget(self.contentTypeComboBox)
+        self.verticalLayout_2.addLayout(self.horizontalLayout_4)
         self.keywordSplitter = QtGui.QSplitter(self.editSplitter)
         self.keywordSplitter.setOrientation(QtCore.Qt.Horizontal)
         self.keywordSplitter.setObjectName(_fromUtf8("keywordSplitter"))
@@ -91,8 +107,8 @@ class Ui_Dialog(object):
         self.verticalLayout_4.addWidget(self.attachmentsMVC)
         self.horizontalLayout = QtGui.QHBoxLayout()
         self.horizontalLayout.setObjectName(_fromUtf8("horizontalLayout"))
-        spacerItem = QtGui.QSpacerItem(40, 20, QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Minimum)
-        self.horizontalLayout.addItem(spacerItem)
+        spacerItem1 = QtGui.QSpacerItem(40, 20, QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Minimum)
+        self.horizontalLayout.addItem(spacerItem1)
         self.attachUploadButton = QtGui.QPushButton(self.attachmentsGroupBox)
         self.attachUploadButton.setObjectName(_fromUtf8("attachUploadButton"))
         self.horizontalLayout.addWidget(self.attachUploadButton)
@@ -128,12 +144,12 @@ class Ui_Dialog(object):
         self.keywordAddPushButton.setObjectName(_fromUtf8("keywordAddPushButton"))
         self.horizontalLayout_3.addWidget(self.keywordAddPushButton)
         self.verticalLayout.addLayout(self.horizontalLayout_3)
-        self.verticalLayout_2.addWidget(self.viewEditSplitter)
+        self.verticalLayout_3.addWidget(self.viewEditSplitter)
         self.horizontalLayout_2 = QtGui.QHBoxLayout()
         self.horizontalLayout_2.setSizeConstraint(QtGui.QLayout.SetDefaultConstraint)
         self.horizontalLayout_2.setObjectName(_fromUtf8("horizontalLayout_2"))
-        spacerItem1 = QtGui.QSpacerItem(40, 20, QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Minimum)
-        self.horizontalLayout_2.addItem(spacerItem1)
+        spacerItem2 = QtGui.QSpacerItem(40, 20, QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Minimum)
+        self.horizontalLayout_2.addItem(spacerItem2)
         self.saveButton = QtGui.QPushButton(Dialog)
         sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Preferred, QtGui.QSizePolicy.Fixed)
         sizePolicy.setHorizontalStretch(0)
@@ -153,15 +169,16 @@ class Ui_Dialog(object):
         self.closeButton.setSizePolicy(sizePolicy)
         self.closeButton.setObjectName(_fromUtf8("closeButton"))
         self.horizontalLayout_2.addWidget(self.closeButton)
-        self.verticalLayout_2.addLayout(self.horizontalLayout_2)
+        self.verticalLayout_3.addLayout(self.horizontalLayout_2)
 
         self.retranslateUi(Dialog)
         QtCore.QMetaObject.connectSlotsByName(Dialog)
 
     def retranslateUi(self, Dialog):
-        Dialog.setWindowTitle(_translate("Dialog", "Jezen Note Editor", None))
+        Dialog.setWindowTitle(_translate("Dialog", "APyEC Note Editor", None))
         self.noteGroupBox.setTitle(_translate("Dialog", "Note", None))
         self.markdownGroupBox.setTitle(_translate("Dialog", "Content", None))
+        self.contentTypeLabel.setText(_translate("Dialog", "Content Type:", None))
         self.attachmentsGroupBox.setTitle(_translate("Dialog", "Attachments", None))
         self.attachUploadButton.setText(_translate("Dialog", "Upload", None))
         self.keywordEditGroupBox.setTitle(_translate("Dialog", "Keywords", None))
@@ -170,4 +187,5 @@ class Ui_Dialog(object):
         self.closeButton.setText(_translate("Dialog", "Close", None))
 
 from keywords import KeywordEditorMVC
+from noteTextEdit import NoteTextEdit
 from attachments import AttachmentsMVC
