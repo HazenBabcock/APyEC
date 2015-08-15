@@ -6,6 +6,7 @@
 
 import datetime
 import os
+import webbrowser
 
 from PyQt4 import QtCore, QtGui, QtWebKit
 
@@ -168,7 +169,6 @@ class Viewer(QtGui.QWidget):
     @logger.logFn        
     def handleLinkClicked(self, url):
         url_string = url.toString()
-        print url_string
         if (url_string[:7] == "apyrec:"):
             [note_name, note_version] = url_string[8:].split("&v=")
             print note_name, note_version
@@ -176,7 +176,7 @@ class Viewer(QtGui.QWidget):
         elif (url_string[:5] == "file:"):
             self.web_viewer.load(url)
         else:
-            print "link not followed."
+            webbrowser.open(url_string)
 
     @logger.logFn
     def handleVersionChange(self, new_index):
