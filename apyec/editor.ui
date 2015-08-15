@@ -34,7 +34,7 @@
       <property name="orientation">
        <enum>Qt::Vertical</enum>
       </property>
-      <widget class="QWidget" name="">
+      <widget class="QWidget" name="layoutWidget">
        <layout class="QVBoxLayout" name="verticalLayout_2">
         <item>
          <widget class="QGroupBox" name="markdownGroupBox">
@@ -75,7 +75,7 @@
               <enum>QFrame::Plain</enum>
              </property>
              <property name="tabStopWidth">
-              <number>40</number>
+              <number>20</number>
              </property>
             </widget>
            </item>

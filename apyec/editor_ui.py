@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'editor.ui'
 #
-# Created: Fri Aug 14 21:37:11 2015
+# Created: Sat Aug 15 07:46:48 2015
 #      by: PyQt4 UI code generator 4.11.3
 #
 # WARNING! All changes made in this file will be lost!
@@ -42,12 +42,12 @@ class Ui_Dialog(object):
         self.editSplitter = QtGui.QSplitter(self.viewEditSplitter)
         self.editSplitter.setOrientation(QtCore.Qt.Vertical)
         self.editSplitter.setObjectName(_fromUtf8("editSplitter"))
-        self.widget = QtGui.QWidget(self.editSplitter)
-        self.widget.setObjectName(_fromUtf8("widget"))
-        self.verticalLayout_2 = QtGui.QVBoxLayout(self.widget)
+        self.layoutWidget = QtGui.QWidget(self.editSplitter)
+        self.layoutWidget.setObjectName(_fromUtf8("layoutWidget"))
+        self.verticalLayout_2 = QtGui.QVBoxLayout(self.layoutWidget)
         self.verticalLayout_2.setMargin(0)
         self.verticalLayout_2.setObjectName(_fromUtf8("verticalLayout_2"))
-        self.markdownGroupBox = QtGui.QGroupBox(self.widget)
+        self.markdownGroupBox = QtGui.QGroupBox(self.layoutWidget)
         sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Preferred, QtGui.QSizePolicy.MinimumExpanding)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
@@ -66,7 +66,7 @@ class Ui_Dialog(object):
         self.noteTextEdit.setSizePolicy(sizePolicy)
         self.noteTextEdit.setFrameShape(QtGui.QFrame.Box)
         self.noteTextEdit.setFrameShadow(QtGui.QFrame.Plain)
-        self.noteTextEdit.setTabStopWidth(40)
+        self.noteTextEdit.setTabStopWidth(20)
         self.noteTextEdit.setObjectName(_fromUtf8("noteTextEdit"))
         self.verticalLayout_5.addWidget(self.noteTextEdit)
         self.verticalLayout_2.addWidget(self.markdownGroupBox)
@@ -74,10 +74,10 @@ class Ui_Dialog(object):
         self.horizontalLayout_4.setObjectName(_fromUtf8("horizontalLayout_4"))
         spacerItem = QtGui.QSpacerItem(40, 20, QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Minimum)
         self.horizontalLayout_4.addItem(spacerItem)
-        self.contentTypeLabel = QtGui.QLabel(self.widget)
+        self.contentTypeLabel = QtGui.QLabel(self.layoutWidget)
         self.contentTypeLabel.setObjectName(_fromUtf8("contentTypeLabel"))
         self.horizontalLayout_4.addWidget(self.contentTypeLabel)
-        self.contentTypeComboBox = QtGui.QComboBox(self.widget)
+        self.contentTypeComboBox = QtGui.QComboBox(self.layoutWidget)
         self.contentTypeComboBox.setObjectName(_fromUtf8("contentTypeComboBox"))
         self.horizontalLayout_4.addWidget(self.contentTypeComboBox)
         self.verticalLayout_2.addLayout(self.horizontalLayout_4)
