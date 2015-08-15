@@ -38,7 +38,7 @@ for ext in [".5", ".4", ".3", ".2", ".1", ""]:
         for line in fp:
 
             try:
-                [time, command] = map(lambda x: x.strip(), line.split(":jezen:INFO:"))
+                [time, command] = map(lambda x: x.strip(), line.split(":apyec:INFO:"))
             except ValueError:
                 continue
 
