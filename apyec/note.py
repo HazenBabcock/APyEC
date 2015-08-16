@@ -341,14 +341,14 @@ class NoteMVC(QtGui.QListView):
         a_note = self.noteFromProxyIndex(self.right_clicked)
         note_content = a_note.loadNoteContent(a_note.getLatestVersionNumber())
         self.editNote.emit(a_note, note_content)
-        
-    @logger.logFn
-    def handleNewNote(self, boolean):
-        self.addNewNote.emit()
 
     @logger.logFn
     def handleMoveNote(self, boolean):
         self.moveNote.emit(self.noteFromProxyIndex(self.right_clicked))
+        
+    @logger.logFn
+    def handleNewNote(self, boolean):
+        self.addNewNote.emit()
     
     @logger.logFn    
     def handleNoteLinkClicked(self, note_filename, note_version):
