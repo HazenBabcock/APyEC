@@ -179,6 +179,19 @@ class Viewer(QtGui.QWidget):
             webbrowser.open(url_string)
 
     @logger.logFn
+    def handlePrint(self, boolean):
+        if self.note is not None:
+            printer = QtGui.QPrinter()
+            print_dialog = QtGui.QPrintDialog(printer, self)
+            if (print_dialog.exec_() == QtGui.QDialog.Accepted):
+                self.web_viewer.print_(printer)
+        else:
+            QtGui.QMessageBox.information(self,
+                                          'Information',
+                                          'No notes are currently selected.',
+                                          QtGui.QMessageBox.Yes)
+                
+    @logger.logFn
     def handleVersionChange(self, new_index):
         self.note_content = self.note.loadNoteContent(new_index)
         self.updateWebView(self.note_content.getContent())

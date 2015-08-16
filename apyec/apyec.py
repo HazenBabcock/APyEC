@@ -47,6 +47,7 @@ class APyEC(QtGui.QMainWindow):
         # Connect signals
         self.ui.actionNew_Note.triggered.connect(self.handleNewNote)
         self.ui.actionNew_Notebook.triggered.connect(self.handleNewNotebook)
+        self.ui.actionPrint_Note.triggered.connect(self.viewer.handlePrint)
         self.ui.actionSet_Directory.triggered.connect(self.handleSetDirectory)
         self.ui.actionQuit.triggered.connect(self.handleQuit)
         self.ui.sortbyComboBox.currentIndexChanged[str].connect(self.ui.noteMVC.handleSortBy)
