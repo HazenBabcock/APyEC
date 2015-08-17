@@ -84,6 +84,7 @@ class Editor(QtGui.QDialog):
 
     @logger.logFn        
     def closeEvent(self, event):
+        self.note.setEditor(None)
         self.settings.setValue("edit_dialog", self.saveGeometry())
         self.settings.setValue("edit_splitter", self.ui.editSplitter.saveState())
         self.settings.setValue("keyword_splitter", self.ui.keywordSplitter.saveState())

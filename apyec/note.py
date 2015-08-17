@@ -362,7 +362,7 @@ class NoteMVC(QtGui.QListView):
             else:
                 self.clearSelection()
                 self.selectedNoteChanged.emit(a_note)
-
+        
     @logger.logFn
     def handleRenameNote(self, boolean):
         a_note = self.noteFromProxyIndex(self.right_clicked)
@@ -502,8 +502,11 @@ class NoteSortFilterProxyModel(QtGui.QSortFilterProxyModel):
 class NoteStandardItem(QtGui.QStandardItem):
     """
     A single note.
-    This class also handles loading and saving the notes contents. There
-    is only one of these per note.
+
+    This class also handles loading and saving the notes contents.
+
+    This class also tracks the current note editor so that there is
+    never more than one open at a time.
     """
     @logger.logFn
     def __init__(self, notebook, keywords_changed_signal, note_file = None, note_name = None):
@@ -517,6 +520,7 @@ class NoteStandardItem(QtGui.QStandardItem):
         """
         self.date_created = None
         self.date_modified = None
+        self.editor = None
         self.filname = ""
         self.fullname = ""
         self.keywords = []
@@ -580,6 +584,10 @@ class NoteStandardItem(QtGui.QStandardItem):
                        self.filename,
                        "remove " + self.name)
 
+    @logger.logFn
+    def getEditor(self):
+        return self.editor
+    
     @logger.logFn    
     def getFileName(self):
         return self.filename
@@ -728,6 +736,10 @@ class NoteStandardItem(QtGui.QStandardItem):
         # version of the note. This may need improvement down the road?
         self.keywords = list(note_content.getKeywords())
 
+    @logger.logFn
+    def setEditor(self, editor):
+        self.editor = editor
+        
         
 class NoteStandardItemModel(QtGui.QStandardItemModel):
     """

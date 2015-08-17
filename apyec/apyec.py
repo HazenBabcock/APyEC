@@ -108,8 +108,12 @@ class APyEC(QtGui.QMainWindow):
             else:
                 ok = False
         if ok:
-            tmp = editor.Editor(a_note, note_content, self)
-            tmp.show()
+            if a_note.getEditor() is not None:
+                a_note.getEditor().raise_()
+            else:
+                tmp = editor.Editor(a_note, note_content, self)
+                a_note.setEditor(tmp)
+                tmp.show()
 
     @logger.logFn
     def handleMoveNote(self, a_note):
