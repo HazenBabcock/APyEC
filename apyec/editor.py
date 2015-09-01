@@ -194,19 +194,11 @@ class Viewer(QtGui.QWidget):
                 
     @logger.logFn
     def handleVersionChange(self, new_index):
-        self.note_content = self.note.loadNoteContent(new_index)
-        self.updateWebView(self.note_content.getContent())
-        self.ui.keywordLabel.setText("Keywords: " + ", ".join(self.note_content.getKeywords()))
-
-        # Need to check that date is valid as newly created notes won't have a date.
-        date = self.note_content.getDate()
-        if date is not None:
-            self.ui.dateLabel.setText(datetime.datetime.strftime(date, '%Y-%m-%d %H:%M:%S'))
-        else:
-            self.ui.dateLabel.setText("")
+        version = str(self.ui.versionComboBox.itemData(new_index).toString())
+        self.versionChange(version)
 
     @logger.logFn
-    def newNoteView(self, new_note):
+    def newNoteView(self, new_note, version = None):
         """
         Called when used directly as a viewer.
         """
@@ -219,16 +211,20 @@ class Viewer(QtGui.QWidget):
         self.base_url = QtCore.QUrl.fromLocalFile(self.note.getNotebook().getDirectory() + "notebook.xml")
         
         # Update content.
-        self.handleVersionChange(self.note.getLatestVersionNumber())
-
+        if version is None:
+            self.versionChange(self.note.getLatestVersion())
+        else:
+            self.versionChange(version)
+            
         # Fill in version combo box.
-        n_versions = self.note.getNumberOfVersions()
-        if (n_versions > 0):
+        versions = self.note.getVersions()
+        if (len(versions) > 0):
             self.ui.versionComboBox.currentIndexChanged.disconnect()
             self.ui.versionComboBox.clear()
-            for i in range(n_versions):
-                self.ui.versionComboBox.addItem(str(i+1))
-            self.ui.versionComboBox.setCurrentIndex(self.note_content.getVersionNumber())
+            for i, v in enumerate(versions):
+                self.ui.versionComboBox.addItem(str(i+1), v)
+            cur_index = self.ui.versionComboBox.findData(self.note_content.getVersion())
+            self.ui.versionComboBox.setCurrentIndex(cur_index)
             self.ui.versionComboBox.currentIndexChanged.connect(self.handleVersionChange)
             self.ui.versionComboBox.show()
         else:
@@ -256,4 +252,16 @@ class Viewer(QtGui.QWidget):
         # Display.
         self.web_viewer.setHtml(html, self.base_url)
 
+    @logger.logFn
+    def versionChange(self, version):
+        self.note_content = self.note.loadNoteContent(version)
+        self.updateWebView(self.note_content.getContent())
+        self.ui.keywordLabel.setText("Keywords: " + ", ".join(self.note_content.getKeywords()))
+
+        # Need to check that date is valid as newly created notes won't have a date.
+        date = self.note_content.getDate()
+        if date is not None:
+            self.ui.dateLabel.setText(datetime.datetime.strftime(date, '%Y-%m-%d %H:%M:%S'))
+        else:
+            self.ui.dateLabel.setText("")        
     

@@ -25,7 +25,7 @@ class NoteContent(object):
     There can be many of these associated with a single NoteStandardItem.
     """
     @logger.logFn
-    def __init__(self, note, version_number, xml = None):
+    def __init__(self, note, version, xml = None):
         """
         Creates a blank note and fills in the fields from the xml if it is provided.
         """
@@ -39,7 +39,7 @@ class NoteContent(object):
         self.name = note.getName()
         self.note = note
         self.unsaved_content = None
-        self.version_number = version_number
+        self.version = version
 
         if xml is not None:
             self.date = xml.find("date").text
@@ -139,8 +139,8 @@ class NoteContent(object):
         return self.unsaved_content
     
     @logger.logFn    
-    def getVersionNumber(self):
-        return self.version_number    
+    def getVersion(self):
+        return self.version
 
     @logger.logFn
     def removeAttachment(self, attachment_fullname):
@@ -300,7 +300,7 @@ class NoteMVC(QtGui.QListView):
                                     self.noteKeywordsChanged,
                                     note_name = old_note.getName() + " copy")
         self.notes[new_note.getFileName()] = new_note
-        new_note.saveNote(old_note.loadNoteContent(old_note.getLatestVersionNumber()))
+        new_note.saveNote(old_note.loadNoteContent(old_note.getLatestVersion()))
         self.note_model.appendRow(new_note)
         self.note_proxy_model.sort(0)
         
@@ -339,7 +339,7 @@ class NoteMVC(QtGui.QListView):
     @logger.logFn
     def handleEditNote(self, boolean):
         a_note = self.noteFromProxyIndex(self.right_clicked)
-        note_content = a_note.loadNoteContent(a_note.getLatestVersionNumber())
+        note_content = a_note.loadNoteContent(a_note.getLatestVersion())
         self.editNote.emit(a_note, note_content)
 
     @logger.logFn
@@ -350,7 +350,7 @@ class NoteMVC(QtGui.QListView):
     def handleNewNote(self, boolean):
         self.addNewNote.emit()
     
-    @logger.logFn    
+    @logger.logFn
     def handleNoteLinkClicked(self, note_filename, note_version):
         note_filename = str(note_filename)
         if note_filename in self.notes:
@@ -539,10 +539,10 @@ class NoteStandardItem(QtGui.QStandardItem):
             # is ordered with the most recent version last.
             self.versions = self.notebook.getNoteVersions(self.filename)
 
-            note_content = self.loadNoteContent(0)
+            note_content = self.loadNoteContent(self.versions[0])
             self.date_created = note_content.getDate()
             
-            note_content = self.loadNoteContent(len(self.versions) - 1)
+            note_content = self.loadNoteContent(self.versions[-1])
             self.date_modified = note_content.getDate()
             self.name = note_content.getName()
 
@@ -601,15 +601,18 @@ class NoteStandardItem(QtGui.QStandardItem):
         return self.keywords
 
     @logger.logFn
-    def getLatestVersionNumber(self):
-        return self.getNumberOfVersions() - 1
+    def getLatestVersion(self):
+        if (len(self.versions) > 0):
+            return self.versions[-1]
+        else:
+            return "empty"
     
     @logger.logFn    
     def getLink(self):
         """
         This returns a link to the most recent version of the note
         """
-        return self.filename + "&v=" + str(self.getLatestVersionNumber())
+        return self.filename + "&v=" + self.getLatestVersion()
 
     @logger.logFn
     def getName(self):
@@ -619,31 +622,35 @@ class NoteStandardItem(QtGui.QStandardItem):
     def getNotebook(self):
         return self.notebook
 
-    @logger.logFn    
+    @logger.logFn
     def getNumberOfVersions(self):
         return len(self.versions)
-
+    
+    @logger.logFn
+    def getVersions(self):
+        return self.versions
+        
     @logger.logFn    
     def isLatestVersion(self, note_content):
-        return (note_content.getVersionNumber() == self.getLatestVersionNumber())
+        return (note_content.getVersion() == self.getLatestVersion())
 
     @logger.logFn
-    def loadNoteContent(self, version_number):
+    def loadNoteContent(self, version):
         """
         Load a version and return it as a NoteContent object.
         """
         
         # Handle newly created notes.
-        if (self.getNumberOfVersions() == 0):
-            return NoteContent(self, -1)
+        if (len(self.versions) == 0):
+            return NoteContent(self, "empty")
 
         # Load the XML of an existing note.
         xml_text = misc.gitGetVersion(self.notebook.getDirectory(),
                                       self.filename,
-                                      self.versions[version_number])
+                                      version)
         xml = ElementTree.fromstring(xml_text)
 
-        note_content = NoteContent(self, version_number, xml)
+        note_content = NoteContent(self, version, xml)
 
         # Check if the keywords have changed.
         self.checkKeywords(note_content)
@@ -662,8 +669,8 @@ class NoteStandardItem(QtGui.QStandardItem):
         # and all of the (unique) attachments.
         attachments = {}
         note_contents = []
-        for v_number in range(self.getNumberOfVersions()):
-            note_content = self.loadNoteContent(v_number)
+        for version in self.versions:
+            note_content = self.loadNoteContent(version)
             note_contents.append(note_content)
             for fullname in note_content.getAttachments():
                 attachments[fullname] = True
@@ -705,7 +712,7 @@ class NoteStandardItem(QtGui.QStandardItem):
         self.setText(new_name)
 
         # Load latest note content and save with new name creating a git commit.
-        note_content = self.loadNoteContent(self.getLatestVersionNumber())
+        note_content = self.loadNoteContent(self.getLatestVersion())
         note_content.setName(self.name)
         self.saveNote(note_content)
 
