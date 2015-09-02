@@ -286,6 +286,7 @@ class NoteMVC(QtGui.QListView):
         Add a new blank note.
         """
         a_note = NoteStandardItem(notebook, self.noteKeywordsChanged, note_name = name)
+        a_note.getNotebook().incNumberNotes(1)
         self.notes[a_note.getFileName()] = a_note
         self.note_model.appendRow(a_note)
         self.note_proxy_model.sort(0)
@@ -302,6 +303,7 @@ class NoteMVC(QtGui.QListView):
                                     note_name = old_note.getName() + " copy")
         self.notes[new_note.getFileName()] = new_note
         new_note.saveNote(old_note.loadNoteContent(old_note.getLatestVersion()))
+        new_note.getNotebook().incNumberNotes(1)
         self.note_model.appendRow(new_note)
         self.note_proxy_model.sort(0)
         
@@ -333,6 +335,7 @@ class NoteMVC(QtGui.QListView):
             self.note_model.removeRow(source_index.row())
             del self.notes[a_note.getFileName()]            
             a_note.deleteNote()
+            a_note.getNotebook().incNumberNotes(-1)
 
             if (len(self.selectedIndexes()) == 0):
                 self.selectedNoteChanged.emit(None, None)
@@ -424,7 +427,9 @@ class NoteMVC(QtGui.QListView):
 
     @logger.logFn
     def moveANote(self, notebook, a_note):
+        a_note.getNotebook().incNumberNotes(-1)
         a_note.moveNote(notebook)
+        a_note.getNotebook().incNumberNotes(1)        
         self.note_proxy_model.invalidateFilter()
 
     @logger.logFn        

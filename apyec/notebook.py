@@ -351,6 +351,7 @@ class NotebookStandardItem(QtGui.QStandardItem):
     @logger.logFn
     def incNumberNotes(self, inc):
         self.number_notes += inc
+        self.emitDataChanged()
         
     @logger.logFn
     def incNumberUnsaved(self):
@@ -367,7 +368,7 @@ class NotebookStandardItem(QtGui.QStandardItem):
             self.setText(self.name)
 
             self.git_log = misc.gitGetLog(self.directory)
-            self.has_unpushed = misc.gitHasUnpushed(self.directory)
+            #self.has_unpushed = misc.gitHasUnpushed(self.directory)
             
             return True
         else:
