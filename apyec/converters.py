@@ -10,7 +10,6 @@ import markdown
 import os
 
 content_types = ["markdown", "ReST"]
-image_types = [".bmp", ".gif", ".jpg", ".png", ".tif", ".tiff"]
 
 # Content converters.
 def convertMDtoHTML(markdown_text):
@@ -35,16 +34,16 @@ def getLinkConverter(content_type):
     else:
         raise ContentTypeException(content_type)    
 
-def linkConverterMD(link_name, link_url):
+def linkConverterMD(link_name, link_url, is_image):
     extension = os.path.splitext(link_name)[1]
-    if extension in image_types:
+    if is_image:
         return "![" + link_name + "](" + link_url + ")"
     else:
         return "[" + link_name + "](" + link_url + ")"
 
-def linkConverterReST(link_name, link_url):
+def linkConverterReST(link_name, link_url, is_image):
     extension = os.path.splitext(link_name)[1]
-    if extension in image_types:
+    if is_image:
         return ".. figure:: " + link_url
     else:
         return "`" + link_name + " <" + link_url + ">`_"

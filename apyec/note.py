@@ -102,8 +102,8 @@ class NoteContent(object):
         return self.html_converter(content)
 
     @logger.logFn
-    def formatLink(self, link_name, link_url):
-        return self.link_converter(link_name, link_url)
+    def formatLink(self, link_name, link_url, is_image = False):
+        return self.link_converter(link_name, link_url, is_image)
     
     @logger.logFn    
     def getAttachments(self):

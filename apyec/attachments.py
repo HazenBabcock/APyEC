@@ -4,6 +4,7 @@
    :synopsis: The attachments class.
 """
 
+import imghdr
 import os
 import shutil
 import uuid
@@ -72,7 +73,9 @@ class AttachmentsMVC(QtGui.QListView):
     def handleCopyLink(self, boolean):
         clipboard = QtGui.QApplication.clipboard()
         an_attachment = self.attachment_model.itemFromIndex(self.right_clicked)
-        clipboard.setText(self.note_content.formatLink(an_attachment.getFilename(), an_attachment.getFullname()))
+        clipboard.setText(self.note_content.formatLink(an_attachment.getFilename(),
+                                                       an_attachment.getFullname(),
+                                                       an_attachment.isImage()))
 
     @logger.logFn        
     def handleDeleteAttachment(self, boolean):
@@ -112,16 +115,18 @@ class AttachmentsStandardItem(QtGui.QStandardItem):
         self.directory = None  # The notebooks directory.
         self.filename = None   # The attachment file name.
         self.fullname = None   # The attachment file name including the path from self.directory.
+        self.is_image = False
 
     @logger.logFn        
     def createWithFullname(self, directory, fullname):
         """
-        This is called to load notes that already exist.
+        This is called to load attachments that already exist.
         """
         self.directory = directory
         self.filename = os.path.basename(fullname)
         self.fullname = fullname
         self.setText(self.filename)
+        self.imageCheck()
 
     @logger.logFn        
     def createWithFile(self, directory, a_file):
@@ -139,6 +144,8 @@ class AttachmentsStandardItem(QtGui.QStandardItem):
         misc.gitAddCommit(directory,
                           self.fullname,
                           "attachment " + self.filename)
+
+        self.imageCheck()
         
     @logger.logFn        
     def getFilename(self):
@@ -151,3 +158,13 @@ class AttachmentsStandardItem(QtGui.QStandardItem):
     @logger.logFn    
     def getUrl(self):
         return self.directory + self.fullname
+
+    @logger.logFn
+    def imageCheck(self):
+        if imghdr.what(self.directory + self.fullname) is not None:
+            self.is_image = True
+            
+    @logger.logFn
+    def isImage(self):
+        return self.is_image
+    
