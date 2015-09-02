@@ -167,11 +167,11 @@ class Viewer(QtGui.QWidget):
     def handleEditButton(self, boolean):
         self.editNote.emit(self.note, self.note_content)
 
-    @logger.logFn        
+    @logger.logFn
     def handleLinkClicked(self, url):
         url_string = url.toString()
-        if (url_string[:7] == "apyrec:"):
-            [note_name, note_version] = url_string[8:].split("&v=")
+        if (url_string[:6] == "apyec:"):
+            [note_name, note_version] = url_string[7:].split("&v=")
             self.noteLinkClicked.emit(note_name, note_version)
         elif (url_string[:5] == "file:"):
             self.web_viewer.load(url)

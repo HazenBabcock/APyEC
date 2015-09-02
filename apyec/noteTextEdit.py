@@ -20,7 +20,7 @@ class NoteTextEdit(QtGui.QTextEdit):
             if (text[:11] == "<note_link>") and (text[-12:] == "</note_link>"):
                 data = text.split("<split>")
                 if (len(data) == 4):
-                    self.insertPlainText(self.note_content.formatLink(data[1], "apyrec:/" + data[2]))
+                    self.insertPlainText(self.note_content.formatLink(data[1], "apyec:/" + data[2]))
                     return
         QtGui.QTextEdit.insertFromMimeData(self, mimedata)
                 
