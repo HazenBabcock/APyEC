@@ -297,6 +297,6 @@ class WebViewer(QtWebKit.QWebView):
     def handleCopyLink(self, boolean):
         self.copyLink.emit()
 
-    def setHtml(self, html, base_url):
+    def setHtml(self, html, base_url = QtCore.QUrl()):
         self.have_content = True
         QtWebKit.QWebView.setHtml(self, html, base_url)
