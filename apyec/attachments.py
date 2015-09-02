@@ -25,6 +25,9 @@ class AttachmentsMVC(QtGui.QListView):
         self.note_content = None
         self.right_clicked = None
 
+        # Drag and drop
+        self.setAcceptDrops(True)
+        
         # Context menu
         self.copyLinkAction = QtGui.QAction(self.tr("Copy Link to Clipboard"), self)
         self.copyLinkAction.triggered.connect(self.handleCopyLink)
@@ -47,6 +50,24 @@ class AttachmentsMVC(QtGui.QListView):
         self.note_content.addAttachment(an_attachment.getFullname())
         self.note.saveNote(self.note_content)
 
+    def dragEnterEvent(self, event):
+        if event.mimeData().hasUrls():
+            event.accept()
+        else:
+            event.ignore()
+
+    def dragMoveEvent(self, event):
+        self.dragEnterEvent(event)
+        
+    def dropEvent(self, event):
+        if event.mimeData().hasUrls():
+            event.accept()
+            for url in event.mimeData().urls():
+                print str(url.toLocalFile())
+                self.addAttachment(str(url.toLocalFile()))
+        else:
+            event.ignore()
+        
     @logger.logFn        
     def handleCopyLink(self, boolean):
         clipboard = QtGui.QApplication.clipboard()
