@@ -122,7 +122,7 @@ class APyEC(QtGui.QMainWindow):
             self.ui.noteMVC.moveANote(nb, a_note)
         
     @logger.logFn            
-    def handleNewNote(self, nb):
+    def handleNewNote(self, nb = None):
         [name, ok] = QtGui.QInputDialog.getText(self,
                                                 'New Note',
                                                 'Enter the notes name:')        
