@@ -231,12 +231,13 @@ class NoteMVC(QtGui.QListView):
     editNote = QtCore.pyqtSignal(object, object)
     moveNote = QtCore.pyqtSignal(object)
     noteKeywordsChanged = QtCore.pyqtSignal(list, list)
-    selectedNoteChanged = QtCore.pyqtSignal(object)
+    selectedNoteChanged = QtCore.pyqtSignal(object, object)
 
     @logger.logFn    
     def __init__(self, parent = None):
         QtGui.QListView.__init__(self, parent)
         self.notes = {}
+        self.note_version = None
         self.right_clicked = None
 
         # Context menu
@@ -358,10 +359,12 @@ class NoteMVC(QtGui.QListView):
             source_index = self.note_model.indexFromItem(a_note)
             filter_index = self.note_proxy_model.mapFromSource(source_index)
             if filter_index.isValid():
+                # Temporarily record this so that the right version will get loaded.
+                self.note_version = note_version
                 self.setCurrentIndex(filter_index)
             else:
                 self.clearSelection()
-                self.selectedNoteChanged.emit(a_note)
+                self.selectedNoteChanged.emit(a_note, note_version)
         
     @logger.logFn
     def handleRenameNote(self, boolean):
@@ -378,7 +381,8 @@ class NoteMVC(QtGui.QListView):
     @logger.logFn                
     def handleSelectionChange(self, new_item_selection, old_item_selection):
         if (len(self.selectedIndexes()) > 0):
-            self.selectedNoteChanged.emit(self.noteFromProxyIndex(self.selectedIndexes()[0]))
+            self.selectedNoteChanged.emit(self.noteFromProxyIndex(self.selectedIndexes()[0]), self.note_version)
+            self.note_version = None
 
     @logger.logFn
     def handleSortBy(self, sort_mode):
@@ -414,7 +418,7 @@ class NoteMVC(QtGui.QListView):
             # This is so that the user can force updates of the display of a note.
             proxy_index = self.indexAt(event.pos())
             if (len(self.selectedIndexes()) > 0) and (proxy_index == self.selectedIndexes()[0]):
-                self.selectedNoteChanged.emit(self.noteFromProxyIndex(proxy_index))
+                self.selectedNoteChanged.emit(self.noteFromProxyIndex(proxy_index), None)
             else:
                 QtGui.QListView.mousePressEvent(self, event)
 

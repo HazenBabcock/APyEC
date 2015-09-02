@@ -136,7 +136,7 @@ class Viewer(QtGui.QWidget):
     Handles interaction with a viewer form.
     """
     editNote = QtCore.pyqtSignal(object, object)
-    noteLinkClicked = QtCore.pyqtSignal(str, int)
+    noteLinkClicked = QtCore.pyqtSignal(str, str)
 
     @logger.logFn    
     def __init__(self, parent = None):
@@ -172,8 +172,7 @@ class Viewer(QtGui.QWidget):
         url_string = url.toString()
         if (url_string[:7] == "apyrec:"):
             [note_name, note_version] = url_string[8:].split("&v=")
-            print note_name, note_version
-            self.noteLinkClicked.emit(note_name, int(note_version))
+            self.noteLinkClicked.emit(note_name, note_version)
         elif (url_string[:5] == "file:"):
             self.web_viewer.load(url)
         else:
@@ -198,7 +197,7 @@ class Viewer(QtGui.QWidget):
         self.versionChange(version)
 
     @logger.logFn
-    def newNoteView(self, new_note, version = None):
+    def newNoteView(self, new_note, version):
         """
         Called when used directly as a viewer.
         """
