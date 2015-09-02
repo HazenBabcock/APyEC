@@ -48,7 +48,7 @@ def gitAddCommit(directory, files, commit):
     else:
         subprocess.call(["git", "add", files])        
     subprocess.call(["git", "commit", "-m", commit])
-
+    
     
 @logger.logFn
 @setDirectory
@@ -99,6 +99,38 @@ def gitGetVersionIDs(directory, filename):
     return resp.splitlines()
 
 
+@logger.logFn
+@setDirectory
+def gitHasRemote(directory):
+    """
+    Returns true if a remote repository has been configured for a notebook.
+    """
+    resp = subprocess.check_output(["git", "remote", "-v"])
+    if (len(resp) > 0):
+        return True
+    else:
+        return False
+
+
+@logger.logFn
+@setDirectory
+def gitHasUnpushed(directory):
+    """
+    Returns true if the local notebook has changes that have not been
+    pushed to the remote notebook.
+
+    Note this assumes that the local branch is master and upstream is origin/master.
+    """
+    if not gitHasRemote(directory):
+        return True
+    
+    resp = subprocess.check_output(["git", "cherry", "-v", "origin/master"])
+    if (len(resp) > 0):
+        return True
+    else:
+        return False
+
+    
 @logger.logFn
 @setDirectory
 def gitInit(directory, name, email):

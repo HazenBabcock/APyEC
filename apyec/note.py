@@ -335,7 +335,7 @@ class NoteMVC(QtGui.QListView):
             a_note.deleteNote()
 
             if (len(self.selectedIndexes()) == 0):
-                self.selectedNoteChanged.emit(None)
+                self.selectedNoteChanged.emit(None, None)
 
     @logger.logFn
     def handleEditNote(self, boolean):
@@ -587,6 +587,7 @@ class NoteStandardItem(QtGui.QStandardItem):
         misc.gitRemove(self.notebook.getDirectory(),
                        self.filename,
                        "remove " + self.name)
+        self.notebook.setUnpushed()
 
     @logger.logFn
     def getEditor(self):
@@ -709,6 +710,8 @@ class NoteStandardItem(QtGui.QStandardItem):
         # Replay history in the new notebook.
         for content in note_contents:
             self.saveNote(content, use_current_time = False)
+            
+        self.notebook.setUnpushed()            
 
     @logger.logFn
     def rename(self, new_name):
@@ -719,6 +722,8 @@ class NoteStandardItem(QtGui.QStandardItem):
         note_content = self.loadNoteContent(self.getLatestVersion())
         note_content.setName(self.name)
         self.saveNote(note_content)
+        
+        self.notebook.setUnpushed()
 
     @logger.logFn            
     def saveNote(self, note_content, use_current_time = True):
@@ -747,6 +752,8 @@ class NoteStandardItem(QtGui.QStandardItem):
         # version of the note. This may need improvement down the road?
         self.keywords = list(note_content.getKeywords())
 
+        self.notebook.setUnpushed()
+        
     @logger.logFn
     def setEditor(self, editor):
         self.editor = editor

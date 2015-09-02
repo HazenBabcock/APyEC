@@ -112,7 +112,14 @@ class NotebookListViewDelegate(QtGui.QStyledItemDelegate):
         style.drawControl(QtGui.QStyle.CE_ItemViewItem, option, painter, option.widget)
 
         # Draw text.
-        painter.drawText(option.rect, QtCore.Qt.AlignLeft, " " + notebook.getName())
+        #if notebook.getUnpushed():
+        #    painter.setPen(QtGui.QColor(100,0,0))
+        #else:
+        #    painter.setPen(QtGui.QColor(0,100,0))
+        if notebook.getUnpushed():
+            painter.drawText(option.rect, QtCore.Qt.AlignLeft, " " + notebook.getName() + "*")
+        else:
+            painter.drawText(option.rect, QtCore.Qt.AlignLeft, " " + notebook.getName())            
         painter.drawText(option.rect, QtCore.Qt.AlignRight, "(" + str(notebook.getNumberNotes()) + " notes) ")
 
         
@@ -278,6 +285,7 @@ class NotebookStandardItem(QtGui.QStandardItem):
 
         self.directory = directory + "nb_"
         self.git_log = []
+        self.has_unpushed = False
         self.name = None
         self.number_notes = 0
         self.number_unsaved = 0
@@ -304,6 +312,8 @@ class NotebookStandardItem(QtGui.QStandardItem):
 
         # Commit the notebook name.
         misc.gitAddCommit(self.directory, self.directory + "notebook.xml", "add notebook.")
+
+        self.has_unpushed = True
 
     @logger.logFn
     def deleteNotebook(self):
@@ -335,6 +345,10 @@ class NotebookStandardItem(QtGui.QStandardItem):
         return self.number_notes
 
     @logger.logFn
+    def getUnpushed(self):
+        return self.has_unpushed
+    
+    @logger.logFn
     def incNumberNotes(self, inc):
         self.number_notes += inc
         
@@ -353,6 +367,8 @@ class NotebookStandardItem(QtGui.QStandardItem):
             self.setText(self.name)
 
             self.git_log = misc.gitGetLog(self.directory)
+            self.has_unpushed = misc.gitHasUnpushed(self.directory)
+            
             return True
         else:
             return False
@@ -370,9 +386,16 @@ class NotebookStandardItem(QtGui.QStandardItem):
         misc.pSaveXML(self.directory + "notebook.xml", xml)
         misc.gitAddCommit(self.directory, self.directory + "notebook.xml", "rename notebook.")
 
+        self.setUnpushed()
+
     @logger.logFn
     def setNumberNotes(self, number_notes):
         self.number_notes = number_notes
+
+    @logger.logFn
+    def setUnpushed(self):
+        self.has_unpushed = True
+        self.emitDataChanged()
         
 
 class NotebookStandardItemModel(QtGui.QStandardItemModel):
