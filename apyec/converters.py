@@ -36,14 +36,14 @@ def getLinkConverter(content_type):
         raise ContentTypeException(content_type)    
 
 def linkConverterMD(link_name, link_url):
-    extension = os.path.splitext(link_name)
+    extension = os.path.splitext(link_name)[1]
     if extension in image_types:
         return "![" + link_name + "](" + link_url + ")"
     else:
         return "[" + link_name + "](" + link_url + ")"
 
 def linkConverterReST(link_name, link_url):
-    extension = os.path.splitext(link_name)
+    extension = os.path.splitext(link_name)[1]
     if extension in image_types:
         return ".. figure:: " + link_url
     else:
