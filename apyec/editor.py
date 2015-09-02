@@ -147,9 +147,8 @@ class Viewer(QtGui.QWidget):
 
         self.ui = viewerUi.Ui_Form()
         self.ui.setupUi(self)
-        
-        self.web_viewer = QtWebKit.QWebView(self)
-        self.web_viewer.page().setLinkDelegationPolicy(QtWebKit.QWebPage.DelegateAllLinks)
+
+        self.web_viewer = WebViewer(self)
 
         layout = QtGui.QHBoxLayout()
         layout.setMargin(2)
@@ -158,11 +157,17 @@ class Viewer(QtGui.QWidget):
 
         self.ui.editPushButton.clicked.connect(self.handleEditButton)
         self.ui.versionComboBox.currentIndexChanged.connect(self.handleVersionChange)
+        self.web_viewer.copyLink.connect(self.handleCopyLink)
         self.web_viewer.linkClicked.connect(self.handleLinkClicked)
 
         self.ui.keywordLabel.hide()
         self.ui.versionWidget.hide()
 
+    @logger.logFn
+    def handleCopyLink(self):
+        clipboard = QtGui.QApplication.clipboard()
+        clipboard.setText("<note_link><split>" + self.note.getName() + "<split>" + self.note.getLink() + "<split></note_link>")
+        
     @logger.logFn        
     def handleEditButton(self, boolean):
         self.editNote.emit(self.note, self.note_content)
@@ -264,3 +269,34 @@ class Viewer(QtGui.QWidget):
         else:
             self.ui.dateLabel.setText("")        
     
+
+class WebViewer(QtWebKit.QWebView):
+    """
+    Web viewer specialized for apyec.
+    """
+    copyLink = QtCore.pyqtSignal()
+    
+    def __init__(self, parent):
+        QtWebKit.QWebView.__init__(self)
+        self.have_content = False
+        
+        self.page().setLinkDelegationPolicy(QtWebKit.QWebPage.DelegateAllLinks)
+
+        self.copyLinkAction = QtGui.QAction(self.tr("Copy Link to Clipboard"), self)
+        self.copyLinkAction.triggered.connect(self.handleCopyLink)
+
+        self.webviewer_popup_menu = QtGui.QMenu(self)
+        self.webviewer_popup_menu.addAction(self.copyLinkAction)
+
+    @logger.logFn
+    def contextMenuEvent(self, event):
+        if self.have_content:
+            self.webviewer_popup_menu.exec_(event.globalPos())
+    
+    @logger.logFn
+    def handleCopyLink(self, boolean):
+        self.copyLink.emit()
+
+    def setHtml(self, html, base_url):
+        self.have_content = True
+        QtWebKit.QWebView.setHtml(self, html, base_url)
