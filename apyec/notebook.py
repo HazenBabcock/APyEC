@@ -143,15 +143,19 @@ class NotebookMVC(QtGui.QListView):
         self.addNoteAction.triggered.connect(self.handleAddNewNote)
         self.addNotebookAction = QtGui.QAction(self.tr("New Notebook"), self)
         self.addNotebookAction.triggered.connect(self.handleAddNewNotebook)
-        self.renameNotebookAction = QtGui.QAction(self.tr("Rename"), self)
-        self.renameNotebookAction.triggered.connect(self.handleRenameNotebook)
         self.deleteAction = QtGui.QAction(self.tr("Delete Notebook"), self)
         self.deleteAction.triggered.connect(self.handleDelete)
+        self.renameNotebookAction = QtGui.QAction(self.tr("Rename"), self)
+        self.renameNotebookAction.triggered.connect(self.handleRenameNotebook)
+        self.syncNotebookAction = QtGui.QAction(self.tr("Sync"), self)
+        self.syncNotebookAction.triggered.connect(self.handleSyncNotebook)
+
         self.nb_popup_menu = QtGui.QMenu(self)
         self.nb_popup_menu.addAction(self.addNoteAction)
         self.nb_popup_menu.addAction(self.addNotebookAction)
         self.nb_popup_menu.addAction(self.deleteAction)
-        self.nb_popup_menu.addAction(self.renameNotebookAction)        
+        self.nb_popup_menu.addAction(self.renameNotebookAction)
+        self.nb_popup_menu.addAction(self.syncNotebookAction)
         self.no_nb_popup_menu = QtGui.QMenu(self)
         self.no_nb_popup_menu.addAction(self.addNotebookAction)
 
@@ -237,6 +241,12 @@ class NotebookMVC(QtGui.QListView):
         if (len(selected_notebooks) > 0):
             self.selectedNotebooksChanged.emit(selected_notebooks)
 
+    @logger.logFn
+    def handleSyncNotebook(self, boolean):
+        notebook = self.notebookFromProxyIndex(self.right_clicked)
+        misc.gitSync(notebook.getDirectory())
+        notebook.setUnpushed(False)
+        
     @logger.logFn            
     def loadNotebooks(self, directory):
         self.clearNotebooks()
@@ -368,7 +378,7 @@ class NotebookStandardItem(QtGui.QStandardItem):
             self.setText(self.name)
 
             self.git_log = misc.gitGetLog(self.directory)
-            #self.has_unpushed = misc.gitHasUnpushed(self.directory)
+            self.has_unpushed = misc.gitHasUnpushed(self.directory)
             
             return True
         else:
@@ -394,8 +404,8 @@ class NotebookStandardItem(QtGui.QStandardItem):
         self.number_notes = number_notes
 
     @logger.logFn
-    def setUnpushed(self):
-        self.has_unpushed = True
+    def setUnpushed(self, unpushed = True):
+        self.has_unpushed = unpushed
         self.emitDataChanged()
         
 

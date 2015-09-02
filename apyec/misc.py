@@ -146,6 +146,14 @@ def gitRemove(directory, filename, commit):
     subprocess.call(["git", "commit", "-m", commit])
     
 
+@logger.logFn
+@setDirectory
+def gitSync(directory):
+    subprocess.call(["git", "fetch", "origin"])
+    resp = subprocess.check_output(["git", "merge", "master", "origin/master", "--ff-only"])
+    subprocess.call(["git", "push", "origin", "master"])
+
+    
 @logger.logFn    
 def pSaveXML(filename, xml):
     """
