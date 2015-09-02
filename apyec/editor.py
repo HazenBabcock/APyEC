@@ -217,7 +217,7 @@ class Viewer(QtGui.QWidget):
             
         # Fill in version combo box.
         versions = self.note.getVersions()
-        if (len(versions) > 0):
+        if (len(versions) > 1):
             self.ui.versionComboBox.currentIndexChanged.disconnect()
             self.ui.versionComboBox.clear()
             for i, v in enumerate(versions):
