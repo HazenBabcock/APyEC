@@ -297,7 +297,7 @@ class WebViewer(QtWebKit.QWebView):
         self.webviewer_popup_menu.addAction(self.printNoteAction)
 
         # This timer is to keep the link hover tooltip from disappearing
-        # too quickly, a surprisingly difficult tast in Qt..
+        # too quickly, a surprisingly difficult task in Qt..
         self.tooltip_timer.setInterval(100)
         self.tooltip_timer.timeout.connect(self.handleTooltipTimer)
         
