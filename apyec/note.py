@@ -203,12 +203,12 @@ class NoteListViewDelegate(QtGui.QStyledItemDelegate):
         upper_rect = QtCore.QRect(option.rect.left(),
                                   option.rect.top(),
                                   option.rect.width(),
-                                  option.rect.height()/2)
+                                  option.rect.height() * 0.45)
         
         lower_rect = QtCore.QRect(option.rect.left(),
-                                  option.rect.top() + option.rect.height()/2,
+                                  option.rect.top() + option.rect.height() * 0.45,
                                   option.rect.width(),
-                                  option.rect.height()/2)
+                                  option.rect.height() * 0.9)
         
         painter.drawText(upper_rect, QtCore.Qt.AlignLeft, " " + note.getName())
         painter.drawText(upper_rect, QtCore.Qt.AlignRight, "(" + str(note.getNumberOfVersions()) + " versions) ")
@@ -218,7 +218,7 @@ class NoteListViewDelegate(QtGui.QStyledItemDelegate):
 
     def sizeHint(self, option, index):
         result = QtGui.QStyledItemDelegate.sizeHint(self, option, index)
-        result.setHeight(2 * result.height())
+        result.setHeight(2.2 * result.height())
         return result
         
     
@@ -581,6 +581,7 @@ class NoteStandardItem(QtGui.QStandardItem):
             self.fullname = self.notebook.getDirectory() + self.filename
             
         QtGui.QStandardItem.__init__(self, self.name + " (" + str(len(self.versions)) +")")
+        self.setToolTip(self.filename)
 
     @logger.logFn
     def checkKeywords(self, note_content):
