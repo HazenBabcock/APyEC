@@ -159,6 +159,7 @@ class Viewer(QtGui.QWidget):
         self.ui.versionComboBox.currentIndexChanged.connect(self.handleVersionChange)
         self.web_viewer.copyLink.connect(self.handleCopyLink)
         self.web_viewer.linkClicked.connect(self.handleLinkClicked)
+        self.web_viewer.printNote.connect(self.handlePrint)
 
         self.ui.keywordLabel.hide()
         self.ui.versionWidget.hide()
@@ -166,7 +167,7 @@ class Viewer(QtGui.QWidget):
     @logger.logFn
     def handleCopyLink(self):
         clipboard = QtGui.QApplication.clipboard()
-        clipboard.setText("<note_link><split>" + self.note.getName() + "<split>" + self.note.getLink() + "<split></note_link>")
+        clipboard.setText("<note_link><split>" + self.note.getName() + "<split>" + self.note.getLink(self.note_content.getVersion()) + "<split></note_link>")
         
     @logger.logFn        
     def handleEditButton(self, boolean):
@@ -275,6 +276,7 @@ class WebViewer(QtWebKit.QWebView):
     Web viewer specialized for apyec.
     """
     copyLink = QtCore.pyqtSignal()
+    printNote = QtCore.pyqtSignal(bool)
     
     def __init__(self, parent):
         QtWebKit.QWebView.__init__(self)
@@ -284,9 +286,12 @@ class WebViewer(QtWebKit.QWebView):
 
         self.copyLinkAction = QtGui.QAction(self.tr("Copy Link to Clipboard"), self)
         self.copyLinkAction.triggered.connect(self.handleCopyLink)
+        self.printNoteAction = QtGui.QAction(self.tr("Print"), self)
+        self.printNoteAction.triggered.connect(self.handlePrintNote)
 
         self.webviewer_popup_menu = QtGui.QMenu(self)
         self.webviewer_popup_menu.addAction(self.copyLinkAction)
+        self.webviewer_popup_menu.addAction(self.printNoteAction)
 
     @logger.logFn
     def contextMenuEvent(self, event):
@@ -297,6 +302,10 @@ class WebViewer(QtWebKit.QWebView):
     def handleCopyLink(self, boolean):
         self.copyLink.emit()
 
+    @logger.logFn
+    def handlePrintNote(self, boolean):
+        self.printNote.emit(True)
+        
     def setHtml(self, html, base_url = QtCore.QUrl()):
         self.have_content = True
         QtWebKit.QWebView.setHtml(self, html, base_url)

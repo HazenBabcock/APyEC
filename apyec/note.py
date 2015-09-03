@@ -618,12 +618,16 @@ class NoteStandardItem(QtGui.QStandardItem):
             return "empty"
     
     @logger.logFn    
-    def getLink(self):
+    def getLink(self, version = None):
         """
-        This returns a link to the most recent version of the note
+        This returns a link to a version of a note (if specified), otherwise 
+        it returns a link to the most recent version of the note.
         """
-        return self.filename + "&v=" + self.getLatestVersion()
-
+        if version is None:
+            return self.filename + "&v=" + self.getLatestVersion()
+        else:
+            return self.filename + "&v=" + version
+        
     @logger.logFn
     def getName(self):
         return self.name
