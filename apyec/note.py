@@ -482,12 +482,19 @@ class NoteSortFilterProxyModel(QtGui.QSortFilterProxyModel):
         """
         Custom sorting.
         """
+        left_note = self.sourceModel().itemFromIndex(left)
+        right_note = self.sourceModel().itemFromIndex(right)
         if (self.sort_mode == "Name"):
-            # Use default sorting to sort by note name.
-            return QtGui.QSortFilterProxyModel.lessThan(self, left, right)
+
+            # If the names are the same, sort by date.
+            if (left_note.name == right_note.name):
+                return (left_note.date_created < right_note.date_created)
+
+            # Otherwise sort by name.
+            else:
+                return (left_note.name < right_note.name)
+
         else:
-            left_note = self.sourceModel().itemFromIndex(left)
-            right_note = self.sourceModel().itemFromIndex(right)            
             if (self.sort_mode == "Date Created"):
                 return (left_note.date_created < right_note.date_created)
             else:
