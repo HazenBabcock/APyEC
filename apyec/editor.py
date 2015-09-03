@@ -281,8 +281,11 @@ class WebViewer(QtWebKit.QWebView):
     def __init__(self, parent):
         QtWebKit.QWebView.__init__(self)
         self.have_content = False
-        
+        self.link = ""
+        self.tooltip_timer = QtCore.QTimer()
+                
         self.page().setLinkDelegationPolicy(QtWebKit.QWebPage.DelegateAllLinks)
+        self.page().linkHovered.connect(self.handleLinkHover)
 
         self.copyLinkAction = QtGui.QAction(self.tr("Copy Link to Clipboard"), self)
         self.copyLinkAction.triggered.connect(self.handleCopyLink)
@@ -293,6 +296,11 @@ class WebViewer(QtWebKit.QWebView):
         self.webviewer_popup_menu.addAction(self.copyLinkAction)
         self.webviewer_popup_menu.addAction(self.printNoteAction)
 
+        # This timer is to keep the link hover tooltip from disappearing
+        # too quickly, a surprisingly difficult tast in Qt..
+        self.tooltip_timer.setInterval(100)
+        self.tooltip_timer.timeout.connect(self.handleTooltipTimer)
+        
     @logger.logFn
     def contextMenuEvent(self, event):
         if self.have_content:
@@ -303,8 +311,20 @@ class WebViewer(QtWebKit.QWebView):
         self.copyLink.emit()
 
     @logger.logFn
+    def handleLinkHover(self, link, title, context):
+        if (len(link) > 0):            
+            self.link = link
+            QtGui.QToolTip.showText(QtGui.QCursor.pos(), self.link, self)
+            self.tooltip_timer.start()
+        else:
+            self.tooltip_timer.stop()
+        
+    @logger.logFn
     def handlePrintNote(self, boolean):
         self.printNote.emit(True)
+
+    def handleTooltipTimer(self):
+        QtGui.QToolTip.showText(QtGui.QCursor.pos(), self.link, self)
         
     def setHtml(self, html, base_url = QtCore.QUrl()):
         self.have_content = True
