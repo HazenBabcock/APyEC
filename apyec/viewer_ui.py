@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'viewer.ui'
 #
-# Created: Fri Aug 14 07:43:02 2015
+# Created: Fri Sep  4 06:11:11 2015
 #      by: PyQt4 UI code generator 4.11.3
 #
 # WARNING! All changes made in this file will be lost!
@@ -26,7 +26,7 @@ except AttributeError:
 class Ui_Form(object):
     def setupUi(self, Form):
         Form.setObjectName(_fromUtf8("Form"))
-        Form.resize(495, 610)
+        Form.resize(495, 625)
         self.verticalLayout = QtGui.QVBoxLayout(Form)
         self.verticalLayout.setContentsMargins(0, 5, 0, 0)
         self.verticalLayout.setObjectName(_fromUtf8("verticalLayout"))
@@ -52,14 +52,14 @@ class Ui_Form(object):
         self.horizontalLayout = QtGui.QHBoxLayout(self.versionWidget)
         self.horizontalLayout.setMargin(0)
         self.horizontalLayout.setObjectName(_fromUtf8("horizontalLayout"))
-        self.versionLabel = QtGui.QLabel(self.versionWidget)
+        self.infoLabel = QtGui.QLabel(self.versionWidget)
         sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Preferred, QtGui.QSizePolicy.Minimum)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
-        sizePolicy.setHeightForWidth(self.versionLabel.sizePolicy().hasHeightForWidth())
-        self.versionLabel.setSizePolicy(sizePolicy)
-        self.versionLabel.setObjectName(_fromUtf8("versionLabel"))
-        self.horizontalLayout.addWidget(self.versionLabel)
+        sizePolicy.setHeightForWidth(self.infoLabel.sizePolicy().hasHeightForWidth())
+        self.infoLabel.setSizePolicy(sizePolicy)
+        self.infoLabel.setObjectName(_fromUtf8("infoLabel"))
+        self.horizontalLayout.addWidget(self.infoLabel)
         self.versionComboBox = QtGui.QComboBox(self.versionWidget)
         self.versionComboBox.setObjectName(_fromUtf8("versionComboBox"))
         self.horizontalLayout.addWidget(self.versionComboBox)
@@ -79,7 +79,7 @@ class Ui_Form(object):
     def retranslateUi(self, Form):
         Form.setWindowTitle(_translate("Form", "Form", None))
         self.keywordLabel.setText(_translate("Form", "Keywords:", None))
-        self.versionLabel.setText(_translate("Form", "Versions:", None))
+        self.infoLabel.setText(_translate("Form", "Info", None))
         self.dateLabel.setText(_translate("Form", "Date", None))
         self.editPushButton.setText(_translate("Form", "Edit", None))
 

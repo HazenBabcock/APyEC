@@ -220,6 +220,9 @@ class Viewer(QtGui.QWidget):
             self.versionChange(self.note.getLatestVersion())
         else:
             self.versionChange(version)
+
+        # Fill in info label.
+        self.ui.infoLabel.setText(self.note.getNotebook().getName() + ", " + self.note.getName())
             
         # Fill in version combo box.
         versions = self.note.getVersions()
