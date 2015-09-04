@@ -143,6 +143,8 @@ class NotebookMVC(QtGui.QListView):
         self.addNoteAction.triggered.connect(self.handleAddNewNote)
         self.addNotebookAction = QtGui.QAction(self.tr("New Notebook"), self)
         self.addNotebookAction.triggered.connect(self.handleAddNewNotebook)
+        self.copyRepoNameAction = QtGui.QAction(self.tr("Copy Directory Name to Clipboard"), self)
+        self.copyRepoNameAction.triggered.connect(self.handleCopyRepoName)
         self.deleteAction = QtGui.QAction(self.tr("Delete Notebook"), self)
         self.deleteAction.triggered.connect(self.handleDelete)
         self.renameNotebookAction = QtGui.QAction(self.tr("Rename"), self)
@@ -153,6 +155,7 @@ class NotebookMVC(QtGui.QListView):
         self.nb_popup_menu = QtGui.QMenu(self)
         self.nb_popup_menu.addAction(self.addNoteAction)
         self.nb_popup_menu.addAction(self.addNotebookAction)
+        self.nb_popup_menu.addAction(self.copyRepoNameAction)
         self.nb_popup_menu.addAction(self.deleteAction)
         self.nb_popup_menu.addAction(self.renameNotebookAction)
         self.nb_popup_menu.addAction(self.syncNotebookAction)
@@ -205,6 +208,12 @@ class NotebookMVC(QtGui.QListView):
     def handleAddNewNotebook(self, boolean):
         self.addNewNotebook.emit()
 
+    @logger.logFn
+    def handleCopyRepoName(self, boolean):
+        clipboard = QtGui.QApplication.clipboard()
+        a_notebook = self.notebookFromProxyIndex(self.right_clicked)
+        clipboard.setText(os.path.basename(a_notebook.getDirectory()[:-1]))
+        
     @logger.logFn        
     def handleDelete(self, boolean):
         notebook = self.notebookFromProxyIndex(self.right_clicked)
