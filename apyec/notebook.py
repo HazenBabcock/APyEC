@@ -147,9 +147,11 @@ class NotebookMVC(QtGui.QListView):
         self.copyRepoNameAction.triggered.connect(self.handleCopyRepoName)
         self.deleteAction = QtGui.QAction(self.tr("Delete Notebook"), self)
         self.deleteAction.triggered.connect(self.handleDelete)
-        self.renameNotebookAction = QtGui.QAction(self.tr("Rename"), self)
+        self.renameNotebookAction = QtGui.QAction(self.tr("Rename Notebook"), self)
         self.renameNotebookAction.triggered.connect(self.handleRenameNotebook)
-        self.syncNotebookAction = QtGui.QAction(self.tr("Sync"), self)
+        self.setRemoteAction = QtGui.QAction(self.tr("Set Remote"), self)
+        self.setRemoteAction.triggered.connect(self.handleSetRemote)
+        self.syncNotebookAction = QtGui.QAction(self.tr("Sync with Remote"), self)
         self.syncNotebookAction.triggered.connect(self.handleSyncNotebook)
 
         self.nb_popup_menu = QtGui.QMenu(self)
@@ -158,6 +160,7 @@ class NotebookMVC(QtGui.QListView):
         self.nb_popup_menu.addAction(self.copyRepoNameAction)
         self.nb_popup_menu.addAction(self.deleteAction)
         self.nb_popup_menu.addAction(self.renameNotebookAction)
+        self.nb_popup_menu.addAction(self.setRemoteAction)
         self.nb_popup_menu.addAction(self.syncNotebookAction)
         self.no_nb_popup_menu = QtGui.QMenu(self)
         self.no_nb_popup_menu.addAction(self.addNotebookAction)
@@ -249,6 +252,19 @@ class NotebookMVC(QtGui.QListView):
         selected_notebooks = self.getSelectedNotebooks()
         if (len(selected_notebooks) > 0):
             self.selectedNotebooksChanged.emit(selected_notebooks)
+
+    @logger.logFn
+    def handleSetRemote(self, boolean):
+        notebook = self.notebookFromProxyIndex(self.right_clicked)
+        remote_url = notebook.getRemote()
+        new_url = misc.largeTextInputDialog(self,
+                                            "Set Remote",
+                                            "Enter a new remote address:",
+                                            remote_url,
+                                            800, 100)
+        if new_url:
+            misc.gitSetRemote(notebook.getDirectory(), new_url)
+            notebook.setUnpushed(False)
 
     @logger.logFn
     def handleSyncNotebook(self, boolean):
@@ -364,6 +380,10 @@ class NotebookStandardItem(QtGui.QStandardItem):
     def getNumberNotes(self):
         return self.number_notes
 
+    @logger.logFn
+    def getRemote(self):
+        return misc.gitGetRemote(self.directory)
+        
     @logger.logFn
     def getUnpushed(self):
         return self.has_unpushed
