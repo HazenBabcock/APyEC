@@ -85,6 +85,13 @@ def gitGetLog(directory):
 
 @logger.logFn
 @setDirectory
+def gitGetRemote(directory):
+    resp = subprocess.check_output(["git", "remote", "-v"])
+    return resp.splitlines()[0].split()[1]
+
+
+@logger.logFn
+@setDirectory
 def gitGetVersion(directory, filename, commit_id):
     return subprocess.check_output(["git", "show", commit_id + ":" + filename])
 
@@ -123,8 +130,12 @@ def gitHasUnpushed(directory):
     """
     if not gitHasRemote(directory):
         return True
+
+    try:
+        resp = subprocess.check_output(["git", "cherry", "-v", "origin/master"])
+    except subprocess.CalledProcessError:
+        return True
     
-    resp = subprocess.check_output(["git", "cherry", "-v", "origin/master"])
     if (len(resp) > 0):
         return True
     else:
@@ -144,6 +155,20 @@ def gitInit(directory, name, email):
 def gitRemove(directory, filename, commit):
     subprocess.call(["git", "rm", filename])
     subprocess.call(["git", "commit", "-m", commit])
+
+
+@logger.logFn
+@setDirectory
+def gitSetRemote(directory, remote_name):
+    """
+    This assumes that the remote is empty, or is at least not ahead of the local.
+    """
+    try:
+        resp = subprocess.check_output(["git", "remote", "add", "origin", remote_name])
+    except subprocess.CalledProcessError:
+        # This assumes that we'll get an error only because origin already exists."
+        resp = subprocess.check_output(["git", "remote", "set-url", "origin", remote_name])        
+    subprocess.call(["git", "push", "origin", "master"])
     
 
 @logger.logFn
@@ -152,6 +177,20 @@ def gitSync(directory):
     subprocess.call(["git", "fetch", "origin"])
     resp = subprocess.check_output(["git", "merge", "master", "origin/master", "--ff-only"])
     subprocess.call(["git", "push", "origin", "master"])
+
+
+def largeTextInputDialog(parent, title, label, text, xsize = 500, ysize = 100):
+    dlg = QtGui.QInputDialog(parent)
+    dlg.setInputMode(QtGui.QInputDialog.TextInput)
+    dlg.setWindowTitle(title)
+    dlg.setLabelText(label)
+    dlg.setTextValue(text)
+    dlg.resize(xsize, ysize)
+    ok = dlg.exec_()
+    if ok:
+        return dlg.textValue()
+    else:
+        return False
 
     
 @logger.logFn    

@@ -143,18 +143,24 @@ class NotebookMVC(QtGui.QListView):
         self.addNoteAction.triggered.connect(self.handleAddNewNote)
         self.addNotebookAction = QtGui.QAction(self.tr("New Notebook"), self)
         self.addNotebookAction.triggered.connect(self.handleAddNewNotebook)
+        self.copyRepoNameAction = QtGui.QAction(self.tr("Copy Directory Name to Clipboard"), self)
+        self.copyRepoNameAction.triggered.connect(self.handleCopyRepoName)
         self.deleteAction = QtGui.QAction(self.tr("Delete Notebook"), self)
         self.deleteAction.triggered.connect(self.handleDelete)
-        self.renameNotebookAction = QtGui.QAction(self.tr("Rename"), self)
+        self.renameNotebookAction = QtGui.QAction(self.tr("Rename Notebook"), self)
         self.renameNotebookAction.triggered.connect(self.handleRenameNotebook)
-        self.syncNotebookAction = QtGui.QAction(self.tr("Sync"), self)
+        self.setRemoteAction = QtGui.QAction(self.tr("Set Remote"), self)
+        self.setRemoteAction.triggered.connect(self.handleSetRemote)
+        self.syncNotebookAction = QtGui.QAction(self.tr("Sync with Remote"), self)
         self.syncNotebookAction.triggered.connect(self.handleSyncNotebook)
 
         self.nb_popup_menu = QtGui.QMenu(self)
         self.nb_popup_menu.addAction(self.addNoteAction)
         self.nb_popup_menu.addAction(self.addNotebookAction)
+        self.nb_popup_menu.addAction(self.copyRepoNameAction)
         self.nb_popup_menu.addAction(self.deleteAction)
         self.nb_popup_menu.addAction(self.renameNotebookAction)
+        self.nb_popup_menu.addAction(self.setRemoteAction)
         self.nb_popup_menu.addAction(self.syncNotebookAction)
         self.no_nb_popup_menu = QtGui.QMenu(self)
         self.no_nb_popup_menu.addAction(self.addNotebookAction)
@@ -205,6 +211,12 @@ class NotebookMVC(QtGui.QListView):
     def handleAddNewNotebook(self, boolean):
         self.addNewNotebook.emit()
 
+    @logger.logFn
+    def handleCopyRepoName(self, boolean):
+        clipboard = QtGui.QApplication.clipboard()
+        a_notebook = self.notebookFromProxyIndex(self.right_clicked)
+        clipboard.setText(os.path.basename(a_notebook.getDirectory()[:-1]))
+        
     @logger.logFn        
     def handleDelete(self, boolean):
         notebook = self.notebookFromProxyIndex(self.right_clicked)
@@ -240,6 +252,19 @@ class NotebookMVC(QtGui.QListView):
         selected_notebooks = self.getSelectedNotebooks()
         if (len(selected_notebooks) > 0):
             self.selectedNotebooksChanged.emit(selected_notebooks)
+
+    @logger.logFn
+    def handleSetRemote(self, boolean):
+        notebook = self.notebookFromProxyIndex(self.right_clicked)
+        remote_url = notebook.getRemote()
+        new_url = misc.largeTextInputDialog(self,
+                                            "Set Remote",
+                                            "Enter a new remote address:",
+                                            remote_url,
+                                            800, 100)
+        if new_url:
+            misc.gitSetRemote(notebook.getDirectory(), new_url)
+            notebook.setUnpushed(False)
 
     @logger.logFn
     def handleSyncNotebook(self, boolean):
@@ -355,6 +380,10 @@ class NotebookStandardItem(QtGui.QStandardItem):
     def getNumberNotes(self):
         return self.number_notes
 
+    @logger.logFn
+    def getRemote(self):
+        return misc.gitGetRemote(self.directory)
+        
     @logger.logFn
     def getUnpushed(self):
         return self.has_unpushed
