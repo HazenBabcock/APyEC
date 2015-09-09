@@ -236,7 +236,6 @@ class Viewer(QtGui.QWidget):
             self.ui.versionComboBox.currentIndexChanged.connect(self.handleVersionChange)
             self.ui.versionComboBox.show()
         else:
-            self.ui.versionLabel.hide()
             self.ui.versionComboBox.hide()
             
         # Show combo box and edit button (if they are hidden).
