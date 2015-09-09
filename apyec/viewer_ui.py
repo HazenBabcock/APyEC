@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'viewer.ui'
 #
-# Created: Fri Sep  4 06:11:11 2015
+# Created: Wed Sep  9 16:21:14 2015
 #      by: PyQt4 UI code generator 4.11.3
 #
 # WARNING! All changes made in this file will be lost!
@@ -61,6 +61,8 @@ class Ui_Form(object):
         self.infoLabel.setObjectName(_fromUtf8("infoLabel"))
         self.horizontalLayout.addWidget(self.infoLabel)
         self.versionComboBox = QtGui.QComboBox(self.versionWidget)
+        self.versionComboBox.setMinimumSize(QtCore.QSize(60, 0))
+        self.versionComboBox.setLayoutDirection(QtCore.Qt.RightToLeft)
         self.versionComboBox.setObjectName(_fromUtf8("versionComboBox"))
         self.horizontalLayout.addWidget(self.versionComboBox)
         self.dateLabel = QtGui.QLabel(self.versionWidget)

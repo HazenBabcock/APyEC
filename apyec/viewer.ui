@@ -69,7 +69,17 @@
        </widget>
       </item>
       <item>
-       <widget class="QComboBox" name="versionComboBox"/>
+       <widget class="QComboBox" name="versionComboBox">
+        <property name="minimumSize">
+         <size>
+          <width>60</width>
+          <height>0</height>
+         </size>
+        </property>
+        <property name="layoutDirection">
+         <enum>Qt::RightToLeft</enum>
+        </property>
+       </widget>
       </item>
       <item>
        <widget class="QLabel" name="dateLabel">
