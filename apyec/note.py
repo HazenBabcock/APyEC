@@ -44,6 +44,8 @@ class NoteContent(object):
         if xml is not None:
             self.date = xml.find("date").text
             self.content = xml.find("content").text
+            if self.content is None:
+                self.content = ""
             self.content_type = xml.find("content_type").text
             self.name = xml.find("name").text
 
