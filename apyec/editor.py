@@ -28,6 +28,8 @@ class Editor(QtGui.QDialog):
     @logger.logFn
     def __init__(self, note, note_content, parent = None):
         QtGui.QDialog.__init__(self, parent)
+
+        self.is_dirty = False
         self.note = note
         self.note_content = note_content
         self.settings = QtCore.QSettings("apyec", "apyec")
@@ -75,7 +77,7 @@ class Editor(QtGui.QDialog):
         
         # Connect signals.
         self.ui.attachUploadButton.clicked.connect(self.handleAttachUpload)
-        self.ui.closeButton.clicked.connect(self.close)
+        self.ui.closeButton.clicked.connect(self.handleClose)
         self.ui.contentTypeComboBox.currentIndexChanged[str].connect(self.handleContentTypeChange)
         self.ui.keywordAddPushButton.clicked.connect(self.handleKeywordAdd)
         self.ui.noteTextEdit.textChanged.connect(self.handleTextChanged)
@@ -106,6 +108,18 @@ class Editor(QtGui.QDialog):
             self.ui.attachmentsMVC.addAttachment(upload_filename)
 
     @logger.logFn
+    def handleClose(self, boolean):
+        if self.is_dirty:
+            reply = QtGui.QMessageBox.warning(self,
+                                              'Warning',
+                                              'Changes have not been saved, close anyway?',
+                                              QtGui.QMessageBox.Yes, QtGui.QMessageBox.No)
+            if (reply == QtGui.QMessageBox.Yes):
+                self.close()
+        else:
+            self.close()
+    
+    @logger.logFn
     def handleContentTypeChange(self, new_content_type):
         self.note_content.setContentType(new_content_type)
         
@@ -118,17 +132,28 @@ class Editor(QtGui.QDialog):
     # FIXME: Need to check if the note has changed to reduce spurious commits?
     @logger.logFn
     def handleSave(self, boolean):
-        self.note_content.setContent(unicode(self.ui.noteTextEdit.toPlainText()))
-        self.note_content.setKeywords(self.ui.keywordEditorMVC.getAllKeywords())
-        self.note.saveNote(self.note_content)
-
+        if self.is_dirty:
+            self.note_content.setContent(unicode(self.ui.noteTextEdit.toPlainText()))
+            self.note_content.setKeywords(self.ui.keywordEditorMVC.getAllKeywords())
+            self.note.saveNote(self.note_content)
+            self.is_dirty = False
+            self.ui.closeButton.setStyleSheet("QPushButton { color: black }")
+            
     @logger.logFn        
     def handleTextChanged(self):
         self.update_timer.start()
 
-    @logger.logFn        
+    @logger.logFn
     def handleUpdateTimer(self):
-        self.viewer.updateWebView(unicode(self.ui.noteTextEdit.toPlainText()))
+        note_content = unicode(self.ui.noteTextEdit.toPlainText())
+        if (note_content != self.note_content.getContent()):
+            self.is_dirty = True
+            self.ui.closeButton.setStyleSheet("QPushButton { color: red }")
+        else:
+            self.is_dirty = False
+            self.ui.closeButton.setStyleSheet("QPushButton { color: black }")
+
+        self.viewer.updateWebView(unicode(note_content))
 
 
 class Viewer(QtGui.QWidget):
