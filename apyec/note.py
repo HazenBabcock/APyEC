@@ -448,7 +448,13 @@ class NoteMVC(QtGui.QListView):
     def updateNotebookFilter(self, notebooks):
         self.note_proxy_model.setNotebooks(notebooks)
         self.note_proxy_model.sort(0)        
-                
+        
+    @logger.logFn
+    def updateNoteDisplay(self, note):
+        if (len(self.selectedIndexes()) > 0):
+            cur_note = self.noteFromProxyIndex(self.selectedIndexes()[0])
+            if (note == cur_note):
+                self.selectedNoteChanged.emit(cur_note, None)
 
 
 class NoteSortFilterProxyModel(QtGui.QSortFilterProxyModel):

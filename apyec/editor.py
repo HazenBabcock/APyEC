@@ -25,6 +25,8 @@ class Editor(QtGui.QDialog):
     """
     Handles interaction with the ui.editTab
     """
+    noteSaved = QtCore.pyqtSignal(object)
+
     @logger.logFn
     def __init__(self, note, note_content, parent = None):
         QtGui.QDialog.__init__(self, parent)
@@ -140,6 +142,7 @@ class Editor(QtGui.QDialog):
             self.note.saveNote(self.note_content)
             self.is_dirty = False
             self.ui.closeButton.setStyleSheet("QPushButton { color: black }")
+            self.noteSaved.emit(self.note)
             
     @logger.logFn        
     def handleTextChanged(self):
@@ -223,7 +226,7 @@ class Viewer(QtGui.QWidget):
                                           'Information',
                                           'No notes are currently selected.',
                                           QtGui.QMessageBox.Yes)
-                
+        
     @logger.logFn
     def handleVersionChange(self, new_index):
         version = str(self.ui.versionComboBox.itemData(new_index).toString())
