@@ -34,6 +34,7 @@ class Editor(QtGui.QDialog):
         self.note_content = note_content
         self.settings = QtCore.QSettings("apyec", "apyec")
 
+        # This is the directory that the attachment was loaded from.
         self.attach_directory = str(self.settings.value("attach_directory", ".").toString())
         
         # Note editting timer, to reduce the number of update
@@ -87,6 +88,7 @@ class Editor(QtGui.QDialog):
     @logger.logFn        
     def closeEvent(self, event):
         self.note.setEditor(None)
+        self.settings.setValue("attach_directory", self.attach_directory)
         self.settings.setValue("edit_dialog", self.saveGeometry())
         self.settings.setValue("edit_splitter", self.ui.editSplitter.saveState())
         self.settings.setValue("keyword_splitter", self.ui.keywordSplitter.saveState())
