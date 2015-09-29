@@ -311,19 +311,28 @@ class WebViewer(QtWebKit.QWebView):
         QtWebKit.QWebView.__init__(self)
         self.have_content = False
         self.link = ""
+        self.pixmap = None
         self.tooltip_timer = QtCore.QTimer()
                 
         self.page().setLinkDelegationPolicy(QtWebKit.QWebPage.DelegateAllLinks)
         self.page().linkHovered.connect(self.handleLinkHover)
 
+        # Configure context menus.
+        self.copyImageAction = QtGui.QAction(self.tr("Copy Image to Clipboard"), self)
+        self.copyImageAction.triggered.connect(self.handleCopyImage)
         self.copyLinkAction = QtGui.QAction(self.tr("Copy Link to Clipboard"), self)
         self.copyLinkAction.triggered.connect(self.handleCopyLink)
         self.printNoteAction = QtGui.QAction(self.tr("Print"), self)
         self.printNoteAction.triggered.connect(self.handlePrintNote)
 
-        self.webviewer_popup_menu = QtGui.QMenu(self)
-        self.webviewer_popup_menu.addAction(self.copyLinkAction)
-        self.webviewer_popup_menu.addAction(self.printNoteAction)
+        self.webviewer_no_image_menu = QtGui.QMenu(self)
+        self.webviewer_no_image_menu.addAction(self.copyLinkAction)
+        self.webviewer_no_image_menu.addAction(self.printNoteAction)
+        
+        self.webviewer_image_menu = QtGui.QMenu(self)
+        self.webviewer_image_menu.addAction(self.copyLinkAction)
+        self.webviewer_image_menu.addAction(self.printNoteAction)
+        self.webviewer_image_menu.addAction(self.copyImageAction)
 
         # This timer is to keep the link hover tooltip from disappearing
         # too quickly, a surprisingly difficult task in Qt..
@@ -333,8 +342,18 @@ class WebViewer(QtWebKit.QWebView):
     @logger.logFn
     def contextMenuEvent(self, event):
         if self.have_content:
-            self.webviewer_popup_menu.exec_(event.globalPos())
-    
+            frame = self.page().mainFrame()
+            self.pixmap = frame.hitTestContent(event.pos()).pixmap()
+            if self.pixmap.isNull():
+                self.webviewer_no_image_menu.exec_(event.globalPos())
+            else:
+                self.webviewer_image_menu.exec_(event.globalPos())
+
+    @logger.logFn
+    def handleCopyImage(self, boolean):
+        clipboard = QtGui.QApplication.clipboard()
+        clipboard.setPixmap(self.pixmap)
+
     @logger.logFn
     def handleCopyLink(self, boolean):
         self.copyLink.emit()

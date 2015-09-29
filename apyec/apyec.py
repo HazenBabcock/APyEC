@@ -78,6 +78,12 @@ class APyEC(QtGui.QMainWindow):
 
     @logger.logFn
     def closeEvent(self, event):
+
+        # If we put anything on the clipboard, clear it before exitting.
+        clipboard = QtGui.QApplication.clipboard()
+        if clipboard.ownsClipboard():
+            clipboard.clear()
+        
         self.settings.setValue("directory", self.directory)
         self.settings.setValue("main_window", self.saveGeometry())
         self.settings.setValue("main_splitter", self.ui.mainSplitter.saveState())
