@@ -87,6 +87,7 @@ class KeywordChooserStandardItem(QtGui.QStandardItem):
     @logger.logFn
     def __init__(self, keyword):
         QtGui.QStandardItem.__init__(self, keyword)
+        self.setEditable(False)
         self.ref_counts = 1
 
     @logger.logFn
@@ -127,7 +128,9 @@ class KeywordEditorMVC(QtGui.QListView):
     def addKeyword(self, keyword):
         if not keyword in self.keywords:
             self.keywords.append(keyword)
-            self.keyword_editor_model.appendRow(QtGui.QStandardItem(keyword))
+            kw_item = QtGui.QStandardItem(keyword)
+            kw_item.setEditable(False)
+            self.keyword_editor_model.appendRow(kw_item)
             self.keyword_editor_model.sort(0)
 
     @logger.logFn

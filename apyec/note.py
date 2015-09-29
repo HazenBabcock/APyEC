@@ -583,6 +583,7 @@ class NoteStandardItem(QtGui.QStandardItem):
             self.fullname = self.notebook.getDirectory() + self.filename
             
         QtGui.QStandardItem.__init__(self, self.name + " (" + str(len(self.versions)) +")")
+        self.setEditable(False)
         self.setToolTip(self.filename)
 
     @logger.logFn

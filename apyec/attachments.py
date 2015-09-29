@@ -112,6 +112,7 @@ class AttachmentsStandardItem(QtGui.QStandardItem):
     @logger.logFn    
     def __init__(self):
         QtGui.QStandardItem.__init__(self, "NA")
+        self.setEditable(False)
         self.directory = None  # The notebooks directory.
         self.filename = None   # The attachment file name.
         self.fullname = None   # The attachment file name including the path from self.directory.

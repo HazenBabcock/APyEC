@@ -317,6 +317,7 @@ class NotebookStandardItem(QtGui.QStandardItem):
         data using one of createWithName() or loadWithUUID.
         """
         QtGui.QStandardItem.__init__(self, "NA")
+        self.setEditable(False)
 
         self.directory = directory + "nb_"
         self.git_log = []
