@@ -21,10 +21,14 @@ class AttachmentsMVC(QtGui.QListView):
     @logger.logFn    
     def __init__(self, parent = None):
         QtGui.QListView.__init__(self, parent)
-        self.directory = None
+        self.directory = None      # This is the directory associated with the notebook.
         self.note = None
         self.note_content = None
         self.right_clicked = None
+        self.settings = QtCore.QSettings("apyec", "apyec")
+
+        # This is the directory where an attachment was most recently saved to.
+        self.saveas_directory = str(self.settings.value("saveas_directory", ".").toString())
 
         # Drag and drop
         self.setAcceptDrops(True)
@@ -34,10 +38,13 @@ class AttachmentsMVC(QtGui.QListView):
         self.copyLinkAction.triggered.connect(self.handleCopyLink)
         self.deleteAttachmentAction = QtGui.QAction(self.tr("Delete Attachment"), self)
         self.deleteAttachmentAction.triggered.connect(self.handleDeleteAttachment)
+        self.saveAsAction = QtGui.QAction(self.tr("Save Attachment as"), self)
+        self.saveAsAction.triggered.connect(self.handleSaveAs)
 
         self.popup_menu = QtGui.QMenu(self)
         self.popup_menu.addAction(self.copyLinkAction)
         self.popup_menu.addAction(self.deleteAttachmentAction)
+        self.popup_menu.addAction(self.saveAsAction)
 
         # Attachments model
         self.attachment_model = QtGui.QStandardItemModel()
@@ -84,6 +91,19 @@ class AttachmentsMVC(QtGui.QListView):
         self.note.saveNote(self.note_content)
         self.attachment_model.removeRow(self.right_clicked.row())
 
+    @logger.logFn
+    def handleSaveAs(self, boolean):
+        an_attachment = self.attachment_model.itemFromIndex(self.right_clicked)
+        saveas_filename = QtGui.QFileDialog.getSaveFileName(self,
+                                                            "Save As",
+                                                            self.saveas_directory + "/" + an_attachment.getFilename(),
+                                                            "*")
+        if saveas_filename:
+            saveas_filename = str(saveas_filename)
+            self.saveas_directory = os.path.dirname(saveas_filename)
+            self.settings.setValue("saveas_directory", self.saveas_directory)
+            an_attachment.saveACopy(saveas_filename)
+        
     @logger.logFn    
     def mousePressEvent(self, event):
         if (event.button() == QtCore.Qt.RightButton):
@@ -168,4 +188,8 @@ class AttachmentsStandardItem(QtGui.QStandardItem):
     @logger.logFn
     def isImage(self):
         return self.is_image
-    
+
+    @logger.logFn
+    def saveACopy(self, filename):
+        shutil.copy(self.directory + self.fullname, filename)
+
