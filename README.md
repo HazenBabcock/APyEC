@@ -14,7 +14,7 @@ You can link to another note by selecting the note that you want to link to, rig
 
 Each notebook is an independent git repository.
 
-To sync your notes with a remote git server you will need to have SSH keys configured.
+To sync your notebooks with a remote git server you will need to have SSH keys configured.
 
 ### Dependencies ###
 * [docutils](https://pypi.python.org/pypi/docutils)
