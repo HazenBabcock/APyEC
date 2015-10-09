@@ -24,7 +24,9 @@ Make sure that git is in your path.
 
 In the apyec/apyec directory:
 
+```
 > python apyec.py
+```
 
 You will be asked to enter a username and email for git when you first run the program.
 
