@@ -18,6 +18,8 @@ To sync your notebooks with a remote git server you will need to have SSH keys c
 
 If you hover over a notebook you will see that path to the notebook as a tooltip.
 
+A star next to the name of a notebook means that it has not been synced, or is out of sync with a remote repository.
+
 ### Quick Start ###
 
 Make sure that git is in your path.
