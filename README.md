@@ -12,9 +12,23 @@ You can add an attachment into a note by right clicking on the attachment to get
 
 You can link to another note by selecting the note that you want to link to, right clicking on the note content display to get a link, and then pasting this link into the content of the note that you are editting.
 
-Each notebook is an independent git repository.
+Each notebook is a single directory on your desk and an independent git repository.
 
 To sync your notebooks with a remote git server you will need to have SSH keys configured.
+
+If you hover over a notebook you will see that path to the notebook as a tooltip.
+
+### Quick Start ###
+
+Make sure that git is in your path.
+
+In the apyec/apyec directory:
+
+> python apyec.py
+
+You will be asked to enter a username and email for git when you first run the program.
+
+File -> Set Directory to set the directory where all your notebooks will be stored.
 
 ### Dependencies ###
 * [docutils](https://pypi.python.org/pypi/docutils)
