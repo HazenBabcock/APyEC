@@ -53,8 +53,8 @@ def startLogging(directory):
                                                           maxBytes = 200000,
                                                           backupCount = 5)
     except IOError:
-        print "Logging Error! Could not open", log_filename
-        print "  Logging is disabled."
+        print("Logging Error! Could not open", log_filename)
+        print("  Logging is disabled.")
         a_logger = False
 
     if a_logger:

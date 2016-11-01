@@ -571,10 +571,10 @@ class NoteStandardItem(QtGui.QStandardItem):
             self.name = note_content.getName()
 
             if 0:
-                print self.name
-                print str(self.date_created)
-                print str(self.date_modified)
-                print ""
+                print(self.name)
+                print(str(self.date_created))
+                print(str(self.date_modified))
+                print("")
                 
             # For now, keywords are always from the most recently saved
             # version of the note. This may need improvement down the road?

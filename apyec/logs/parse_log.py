@@ -16,7 +16,7 @@ import os
 import sys
 
 if (len(sys.argv) != 2):
-    print "usage: <log file>"
+    print("usage: <log file>")
     exit()
 
 
@@ -51,7 +51,7 @@ for ext in [".5", ".4", ".3", ".2", ".1", ""]:
                     
             # Command start.
             if (" started" in line):
-                print elapsed, " " * indent, command
+                print(elapsed, " " * indent, command)
                 indent += 2
 
             # Command end.
@@ -59,4 +59,4 @@ for ext in [".5", ".4", ".3", ".2", ".1", ""]:
                 indent -= 2
                 if (indent < 0):
                     indent = 0
-                print elapsed, " " * indent, command
+                print(elapsed, " " * indent, command)

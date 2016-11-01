@@ -71,7 +71,7 @@ class AttachmentsMVC(QtGui.QListView):
         if event.mimeData().hasUrls():
             event.accept()
             for url in event.mimeData().urls():
-                print str(url.toLocalFile())
+                print(str(url.toLocalFile()))
                 self.addAttachment(str(url.toLocalFile()))
         else:
             event.ignore()

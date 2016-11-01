@@ -157,7 +157,7 @@ class APyEC(QtGui.QMainWindow):
         if directory:
             if (directory[-1] != "/"):
                 directory += "/"
-            print directory
+            print(directory)
             self.directory = directory
             self.ui.noteMVC.clearNotes()
             self.loadNotebooks()
