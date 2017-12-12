@@ -10,7 +10,7 @@ import os
 import uuid
 import shutil
 
-from PyQt4 import QtCore, QtGui
+from PyQt5 import QtCore, QtGui, QtWidgets
 
 from xml.etree import ElementTree
 
@@ -25,10 +25,12 @@ class NoteContent(object):
     There can be many of these associated with a single NoteStandardItem.
     """
     @logger.logFn
-    def __init__(self, note, version, xml = None):
+    def __init__(self, note, version, xml = None, **kwds):
         """
         Creates a blank note and fills in the fields from the xml if it is provided.
         """
+        super().__init__(**kwds)
+        
         self.attachments = []
         self.content = ""
         self.content_type = "markdown"
@@ -181,12 +183,13 @@ class NoteContent(object):
         self.unsaved_content = new_content
         
 
-class NoteListViewDelegate(QtGui.QStyledItemDelegate):
+class NoteListViewDelegate(QtWidgets.QStyledItemDelegate):
     """
     A custom look for each note item.
     """
-    def __init__(self, model, proxy_model):
-        QtGui.QStyledItemDelegate.__init__(self)
+    def __init__(self, model, proxy_model, **kwds):
+        super().__init__(**kwds)
+
         self.model = model
         self.proxy_model = proxy_model
 
@@ -199,7 +202,7 @@ class NoteListViewDelegate(QtGui.QStyledItemDelegate):
 
         # Draw correct background.
         style = option.widget.style()
-        style.drawControl(QtGui.QStyle.CE_ItemViewItem, option, painter, option.widget)
+        style.drawControl(QtWidgets.QStyle.CE_ItemViewItem, option, painter, option.widget)
 
         # Draw text.
         upper_rect = QtCore.QRect(option.rect.left(),
@@ -219,12 +222,12 @@ class NoteListViewDelegate(QtGui.QStyledItemDelegate):
                          " created on " + datetime.datetime.strftime(note.date_created, '%Y-%m-%d'))
 
     def sizeHint(self, option, index):
-        result = QtGui.QStyledItemDelegate.sizeHint(self, option, index)
+        result = QtWidgets.QStyledItemDelegate.sizeHint(self, option, index)
         result.setHeight(2.2 * result.height())
         return result
         
     
-class NoteMVC(QtGui.QListView):
+class NoteMVC(QtWidgets.QListView):
     """
     Encapsulates a list view specialized for notes and it's associated model.
     """
@@ -237,28 +240,29 @@ class NoteMVC(QtGui.QListView):
 
     @logger.logFn    
     def __init__(self, parent = None):
-        QtGui.QListView.__init__(self, parent)
+        super().__init__(parent)
+
         self.notes = {}
         self.note_version = None
         self.right_clicked = None
 
         # Context menu
-        self.copyLinkAction = QtGui.QAction(self.tr("Copy Link to Clipboard"), self)
+        self.copyLinkAction = QtWidgets.QAction(self.tr("Copy Link to Clipboard"), self)
         self.copyLinkAction.triggered.connect(self.handleCopyLink)
-        self.copyNoteAction = QtGui.QAction(self.tr("Copy Note"), self)
+        self.copyNoteAction = QtWidgets.QAction(self.tr("Copy Note"), self)
         self.copyNoteAction.triggered.connect(self.handleCopyNote)
-        self.deleteNoteAction = QtGui.QAction(self.tr("Delete Note"), self)
+        self.deleteNoteAction = QtWidgets.QAction(self.tr("Delete Note"), self)
         self.deleteNoteAction.triggered.connect(self.handleDeleteNote)
-        self.editNoteAction = QtGui.QAction(self.tr("Edit Note"), self)
+        self.editNoteAction = QtWidgets.QAction(self.tr("Edit Note"), self)
         self.editNoteAction.triggered.connect(self.handleEditNote)
-        self.moveNoteAction = QtGui.QAction(self.tr("Move Note"), self)
+        self.moveNoteAction = QtWidgets.QAction(self.tr("Move Note"), self)
         self.moveNoteAction.triggered.connect(self.handleMoveNote)
-        self.newNoteAction = QtGui.QAction(self.tr("New Note"), self)
+        self.newNoteAction = QtWidgets.QAction(self.tr("New Note"), self)
         self.newNoteAction.triggered.connect(self.handleNewNote)
-        self.renameNoteAction = QtGui.QAction(self.tr("Rename Note"), self)
+        self.renameNoteAction = QtWidgets.QAction(self.tr("Rename Note"), self)
         self.renameNoteAction.triggered.connect(self.handleRenameNote)
 
-        self.note_popup_menu = QtGui.QMenu(self)
+        self.note_popup_menu = QtWidgets.QMenu(self)
         self.note_popup_menu.addAction(self.copyLinkAction)
         self.note_popup_menu.addAction(self.copyNoteAction)
         self.note_popup_menu.addAction(self.deleteNoteAction)
@@ -267,12 +271,12 @@ class NoteMVC(QtGui.QListView):
         self.note_popup_menu.addAction(self.newNoteAction)
         self.note_popup_menu.addAction(self.renameNoteAction)        
 
-        self.no_note_popup_menu = QtGui.QMenu(self)
+        self.no_note_popup_menu = QtWidgets.QMenu(self)
         self.no_note_popup_menu.addAction(self.newNoteAction)
 
         # Note model
-        self.note_model = NoteStandardItemModel(self)
-        self.note_proxy_model = NoteSortFilterProxyModel(self)
+        self.note_model = NoteStandardItemModel(parent = self)
+        self.note_proxy_model = NoteSortFilterProxyModel(parent = self)
         self.note_proxy_model.setSourceModel(self.note_model)
         self.setModel(self.note_proxy_model)
 
@@ -314,7 +318,7 @@ class NoteMVC(QtGui.QListView):
         """
         This returns the filename and location which can be used to create a hyperlink.
         """
-        clipboard = QtGui.QApplication.clipboard()
+        clipboard = QtWidgets.QApplication.clipboard()
         a_note = self.noteFromProxyIndex(self.right_clicked)
         clipboard.setText("<note_link><split>" + a_note.getName() + "<split>" + a_note.getLink() + "<split></note_link>")
 
@@ -327,12 +331,12 @@ class NoteMVC(QtGui.QListView):
         a_note = self.noteFromProxyIndex(self.right_clicked)
         a_note_name = a_note.getName()
 
-        reply = QtGui.QMessageBox.question(self,
-                                           "Warning!",
-                                           "Really delete note '" + a_note_name + "'?",
-                                           QtGui.QMessageBox.Yes,
-                                           QtGui.QMessageBox.No)
-        if (reply == QtGui.QMessageBox.Yes):
+        reply = QtWidgets.QMessageBox.question(self,
+                                               "Warning!",
+                                               "Really delete note '" + a_note_name + "'?",
+                                               QtWidgets.QMessageBox.Yes,
+                                               QtWidgets.QMessageBox.No)
+        if (reply == QtWidgets.QMessageBox.Yes):
             source_index = self.note_proxy_model.mapToSource(self.right_clicked)
             self.note_model.removeRow(source_index.row())
             del self.notes[a_note.getFileName()]            
@@ -375,10 +379,10 @@ class NoteMVC(QtGui.QListView):
     def handleRenameNote(self, boolean):
         a_note = self.noteFromProxyIndex(self.right_clicked)
         a_note_name = a_note.getName()
-        [new_name, ok] = QtGui.QInputDialog.getText(self,
-                                                    'Rename Note',
-                                                    'Enter a new name:',
-                                                    text = a_note_name)
+        [new_name, ok] = QtWidgets.QInputDialog.getText(self,
+                                                        'Rename Note',
+                                                        'Enter a new name:',
+                                                        text = a_note_name)
         if ok:
             a_note.rename(new_name)
             self.note_proxy_model.sort(0)
@@ -425,7 +429,7 @@ class NoteMVC(QtGui.QListView):
             if (len(self.selectedIndexes()) > 0) and (proxy_index == self.selectedIndexes()[0]):
                 self.selectedNoteChanged.emit(self.noteFromProxyIndex(proxy_index), None)
             else:
-                QtGui.QListView.mousePressEvent(self, event)
+                super().mousePressEvent(event)
 
     @logger.logFn
     def moveANote(self, notebook, a_note):
@@ -457,14 +461,15 @@ class NoteMVC(QtGui.QListView):
                 self.selectedNoteChanged.emit(cur_note, None)
 
 
-class NoteSortFilterProxyModel(QtGui.QSortFilterProxyModel):
+class NoteSortFilterProxyModel(QtCore.QSortFilterProxyModel):
     """
     Sort and filter notes. At the start (or when changing directories) we
     load all the notes, but only show the ones that match the filters.
     """
     @logger.logFn    
-    def __init__(self, parent = None):
-        QtGui.QSortFilterProxyModel.__init__(self, parent)
+    def __init__(self, **kwds):
+        super().__init__(**kwds)
+
         self.keywords = []
         self.notebooks = []
         self.sort_mode = "Name"
@@ -533,7 +538,7 @@ class NoteStandardItem(QtGui.QStandardItem):
     never more than one open at a time.
     """
     @logger.logFn
-    def __init__(self, notebook, keywords_changed_signal, note_file = None, note_name = None):
+    def __init__(self, notebook, keywords_changed_signal, note_file = None, note_name = None, **kwds):
         """
         Load on old note (when given a note_file), or create a
         new note (when given a name).
@@ -542,6 +547,8 @@ class NoteStandardItem(QtGui.QStandardItem):
 
         note_file is path/note_(uuid).xml
         """
+        super().__init__(**kwds)
+        
         self.date_created = None
         self.date_modified = None
         self.editor = None
@@ -790,7 +797,8 @@ class NoteStandardItemModel(QtGui.QStandardItemModel):
     The note listview model.
     """
     @logger.logFn    
-    def __init__(self, parent = None):
-        QtGui.QStandardItemModel.__init__(self, parent)
+    def __init__(self, **kwds):
+        super().__init__(**kwds)
+
 
     

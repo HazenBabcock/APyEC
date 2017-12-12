@@ -8,12 +8,12 @@ import os
 import shutil
 import uuid
 
-from PyQt4 import QtCore, QtGui
+from PyQt5 import QtCore, QtGui, QtWidgets
 
 import logger
 
 
-class KeywordChooserMVC(QtGui.QListView):
+class KeywordChooserMVC(QtWidgets.QListView):
     """
     Encapsulates a list view specialized for selecting keywords. This is
     where the user can select key words to use to filter the notes.
@@ -24,11 +24,12 @@ class KeywordChooserMVC(QtGui.QListView):
     """
     selectedKeywordsChanged = QtCore.pyqtSignal(list)
     
-    @logger.logFn    
+    @logger.logFn
     def __init__(self, parent = None):
-        QtGui.QListView.__init__(self, parent)
+        super().__init__(parent)
+
         self.all_keywords = {}
-        self.setSelectionMode(QtGui.QAbstractItemView.ExtendedSelection)
+        self.setSelectionMode(QtWidgets.QAbstractItemView.ExtendedSelection)
 
         # Keyword chooser model
         self.keyword_chooser_model = QtGui.QStandardItemModel(self)
@@ -86,7 +87,8 @@ class KeywordChooserStandardItem(QtGui.QStandardItem):
     """
     @logger.logFn
     def __init__(self, keyword):
-        QtGui.QStandardItem.__init__(self, keyword)
+        super().__init__(keyword)
+
         self.setEditable(False)
         self.ref_counts = 1
 
@@ -100,7 +102,7 @@ class KeywordChooserStandardItem(QtGui.QStandardItem):
         return self.ref_counts
 
     
-class KeywordEditorMVC(QtGui.QListView):
+class KeywordEditorMVC(QtWidgets.QListView):
     """
     Encapsulates a list view specialized for adding and removing
     keywords from a specific note.
@@ -108,8 +110,9 @@ class KeywordEditorMVC(QtGui.QListView):
     #selectedKeywordChanged = QtCore.pyqtSignal(object)
 
     @logger.logFn
-    def __init__(self, parent = None):
-        QtGui.QListView.__init__(self, parent)
+    def __init__(self, **kwds):
+        super().__init__(**kwds)
+
         self.keywords = []
         self.right_clicked = None
 

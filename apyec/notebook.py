@@ -10,7 +10,7 @@ import uuid
 
 from xml.etree import ElementTree
 
-from PyQt4 import QtCore, QtGui
+from PyQt5 import QtCore, QtGui, QtWidgets
 
 import notebook_chooser_ui as notebookChooserUi
 
@@ -48,13 +48,14 @@ def chooseNotebook(notebook_mvc, a_notebook = None):
             return None
     
 
-class NotebookChooser(QtGui.QDialog):
+class NotebookChooser(QtWidgets.QDialog):
     """
     Dialog for choosing a NotebookStandardItem from a list of NotebookStandardItems.
     """
     @logger.logFn
-    def __init__(self, notebook_items = [], parent = None):
-        QtGui.QDialog.__init__(self, parent)
+    def __init__(self, notebook_items = [], **kwds):
+        super().__init__(**kwds)
+
         self.choosen = None
 
         self.ui = notebookChooserUi.Ui_Dialog()
@@ -62,7 +63,7 @@ class NotebookChooser(QtGui.QDialog):
         self.setWindowTitle("Notebook Chooser")
         
         self.model = QtGui.QStandardItemModel()
-        self.proxy_model = QtGui.QSortFilterProxyModel()
+        self.proxy_model = QtCore.QSortFilterProxyModel()
         self.proxy_model.setSourceModel(self.model)
         self.ui.chooserListView.setModel(self.proxy_model)
 
@@ -91,12 +92,13 @@ class NotebookChooser(QtGui.QDialog):
         self.accept()
         
 
-class NotebookListViewDelegate(QtGui.QStyledItemDelegate):
+class NotebookListViewDelegate(QtWidgets.QStyledItemDelegate):
     """
     A custom look for each notebook item.
     """
-    def __init__(self, model, proxy_model):
-        QtGui.QStyledItemDelegate.__init__(self)
+    def __init__(self, model, proxy_model, **kwds):
+        super().__init__(**kwds)
+
         self.model = model
         self.proxy_model = proxy_model
 
@@ -109,7 +111,7 @@ class NotebookListViewDelegate(QtGui.QStyledItemDelegate):
 
         # Draw correct background.
         style = option.widget.style()
-        style.drawControl(QtGui.QStyle.CE_ItemViewItem, option, painter, option.widget)
+        style.drawControl(QtWidgets.QStyle.CE_ItemViewItem, option, painter, option.widget)
 
         # Draw text.
         #if notebook.getUnpushed():
@@ -123,7 +125,7 @@ class NotebookListViewDelegate(QtGui.QStyledItemDelegate):
         painter.drawText(option.rect, QtCore.Qt.AlignRight, "(" + str(notebook.getNumberNotes()) + " notes) ")
 
         
-class NotebookMVC(QtGui.QListView):
+class NotebookMVC(QtWidgets.QListView):
     """
     Encapsulates a list view specialized for notebooks and it's associated model.
     """
@@ -133,28 +135,29 @@ class NotebookMVC(QtGui.QListView):
 
     @logger.logFn    
     def __init__(self, parent = None):
-        QtGui.QListView.__init__(self, parent)
+        super().__init__(parent)
+
         self.right_clicked = None
 
-        self.setSelectionMode(QtGui.QAbstractItemView.ExtendedSelection)
+        self.setSelectionMode(QtWidgets.QAbstractItemView.ExtendedSelection)
 
         # Context menu
-        self.addNoteAction = QtGui.QAction(self.tr("Add Note"), self)
+        self.addNoteAction = QtWidgets.QAction(self.tr("Add Note"), self)
         self.addNoteAction.triggered.connect(self.handleAddNewNote)
-        self.addNotebookAction = QtGui.QAction(self.tr("New Notebook"), self)
+        self.addNotebookAction = QtWidgets.QAction(self.tr("New Notebook"), self)
         self.addNotebookAction.triggered.connect(self.handleAddNewNotebook)
-        self.copyRepoNameAction = QtGui.QAction(self.tr("Copy Directory Name to Clipboard"), self)
+        self.copyRepoNameAction = QtWidgets.QAction(self.tr("Copy Directory Name to Clipboard"), self)
         self.copyRepoNameAction.triggered.connect(self.handleCopyRepoName)
-        self.deleteAction = QtGui.QAction(self.tr("Delete Notebook"), self)
+        self.deleteAction = QtWidgets.QAction(self.tr("Delete Notebook"), self)
         self.deleteAction.triggered.connect(self.handleDelete)
-        self.renameNotebookAction = QtGui.QAction(self.tr("Rename Notebook"), self)
+        self.renameNotebookAction = QtWidgets.QAction(self.tr("Rename Notebook"), self)
         self.renameNotebookAction.triggered.connect(self.handleRenameNotebook)
-        self.setRemoteAction = QtGui.QAction(self.tr("Set Remote"), self)
+        self.setRemoteAction = QtWidgets.QAction(self.tr("Set Remote"), self)
         self.setRemoteAction.triggered.connect(self.handleSetRemote)
-        self.syncNotebookAction = QtGui.QAction(self.tr("Sync with Remote"), self)
+        self.syncNotebookAction = QtWidgets.QAction(self.tr("Sync with Remote"), self)
         self.syncNotebookAction.triggered.connect(self.handleSyncNotebook)
 
-        self.nb_popup_menu = QtGui.QMenu(self)
+        self.nb_popup_menu = QtWidgets.QMenu(self)
         self.nb_popup_menu.addAction(self.addNoteAction)
         self.nb_popup_menu.addAction(self.addNotebookAction)
         self.nb_popup_menu.addAction(self.copyRepoNameAction)
@@ -162,12 +165,12 @@ class NotebookMVC(QtGui.QListView):
         self.nb_popup_menu.addAction(self.renameNotebookAction)
         self.nb_popup_menu.addAction(self.setRemoteAction)
         self.nb_popup_menu.addAction(self.syncNotebookAction)
-        self.no_nb_popup_menu = QtGui.QMenu(self)
+        self.no_nb_popup_menu = QtWidgets.QMenu(self)
         self.no_nb_popup_menu.addAction(self.addNotebookAction)
 
         # Notebook model
-        self.notebook_model = NotebookStandardItemModel(self)
-        self.notebook_proxy_model = NotebookSortFilterProxyModel(self)
+        self.notebook_model = NotebookStandardItemModel(parent = self)
+        self.notebook_proxy_model = NotebookSortFilterProxyModel(parent = self)
         self.notebook_proxy_model.setSourceModel(self.notebook_model)
         self.setModel(self.notebook_proxy_model)
 
@@ -213,7 +216,7 @@ class NotebookMVC(QtGui.QListView):
 
     @logger.logFn
     def handleCopyRepoName(self, boolean):
-        clipboard = QtGui.QApplication.clipboard()
+        clipboard = QtWidgets.QApplication.clipboard()
         a_notebook = self.notebookFromProxyIndex(self.right_clicked)
         clipboard.setText(os.path.basename(a_notebook.getDirectory()[:-1]))
         
@@ -222,12 +225,12 @@ class NotebookMVC(QtGui.QListView):
         notebook = self.notebookFromProxyIndex(self.right_clicked)
         notebook_name = notebook.getName()
 
-        reply = QtGui.QMessageBox.question(self,
-                                           "Warning!",
-                                           "Really delete notebook '" + notebook_name + "'?",
-                                           QtGui.QMessageBox.Yes,
-                                           QtGui.QMessageBox.No)
-        if (reply == QtGui.QMessageBox.Yes):
+        reply = QtWidgets.QMessageBox.question(self,
+                                               "Warning!",
+                                               "Really delete notebook '" + notebook_name + "'?",
+                                               QtWidgets.QMessageBox.Yes,
+                                               QtWidgets.QMessageBox.No)
+        if (reply == QtWidgets.QMessageBox.Yes):
             source_index = self.notebook_proxy_model.mapToSource(self.right_clicked)
             self.notebook_model.removeRow(source_index.row())
 
@@ -239,10 +242,10 @@ class NotebookMVC(QtGui.QListView):
     def handleRenameNotebook(self, boolean):
         notebook = self.notebookFromProxyIndex(self.right_clicked)
         notebook_name = notebook.getName()
-        [new_name, ok] = QtGui.QInputDialog.getText(self,
-                                                    'Rename Notebook',
-                                                    'Enter a new name:',
-                                                    text = notebook_name)
+        [new_name, ok] = QtWidgets.QInputDialog.getText(self,
+                                                        'Rename Notebook',
+                                                        'Enter a new name:',
+                                                        text = notebook_name)
         if ok:
             notebook.rename(new_name)
             self.notebook_proxy_model.sort(0)
@@ -276,7 +279,7 @@ class NotebookMVC(QtGui.QListView):
     def loadNotebooks(self, directory):
         self.clearNotebooks()
 
-        for nb_id in map(lambda(x): x[len(directory) + 3:], glob.glob(directory + "nb_*")):
+        for nb_id in map(lambda x: x[len(directory) + 3:], glob.glob(directory + "nb_*")):
             nb = NotebookStandardItem(directory)
             if nb.loadWithUUID(nb_id):
                 self.notebook_model.appendRow(nb)
@@ -292,7 +295,7 @@ class NotebookMVC(QtGui.QListView):
             else:
                 self.no_nb_popup_menu.exec_(event.globalPos())                
         else:
-            QtGui.QListView.mousePressEvent(self, event)
+            super().mousePressEvent(event)
 
     @logger.logFn        
     def notebookFromProxyIndex(self, proxy_index):
@@ -300,7 +303,7 @@ class NotebookMVC(QtGui.QListView):
         return self.notebook_model.itemFromIndex(source_index)
 
 
-class NotebookSortFilterProxyModel(QtGui.QSortFilterProxyModel):
+class NotebookSortFilterProxyModel(QtCore.QSortFilterProxyModel):
     """
     Sort notebooks.
     """
@@ -311,12 +314,13 @@ class NotebookStandardItem(QtGui.QStandardItem):
     A single notebook in the notebook listview model.
     """
     @logger.logFn
-    def __init__(self, directory):
+    def __init__(self, directory, **kwds):
         """
         After creating the item you need to enter the appropriate initial
         data using one of createWithName() or loadWithUUID.
         """
-        QtGui.QStandardItem.__init__(self, "NA")
+        super().__init__(**kwds)
+
         self.setEditable(False)
 
         self.directory = directory + "nb_"

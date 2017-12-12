@@ -3,7 +3,7 @@
 import os
 import sys
 
-from PyQt4 import QtCore, QtGui
+from PyQt5 import QtCore, QtGui, QtWidgets
 
 import apyec_ui as apyecUi
 
@@ -13,10 +13,11 @@ import misc
 import notebook
 
 
-class APyEC(QtGui.QMainWindow):
+class APyEC(QtWidgets.QMainWindow):
 
-    def __init__(self, parent = None):
-        QtGui.QMainWindow.__init__(self, parent)
+    def __init__(self, **kwds):
+        super().__init__(**kwds)
+
         self.email = ""
         self.settings = QtCore.QSettings("apyec", "apyec")
         self.username = ""
@@ -27,8 +28,8 @@ class APyEC(QtGui.QMainWindow):
         self.ui = apyecUi.Ui_MainWindow()
         self.ui.setupUi(self)
 
-        self.viewer = editor.Viewer(self.ui.noteGroupBox)
-        layout = QtGui.QHBoxLayout()
+        self.viewer = editor.Viewer(parent = self.ui.noteGroupBox)
+        layout = QtWidgets.QHBoxLayout()
         layout.addWidget(self.viewer)
         self.ui.noteGroupBox.setLayout(layout)
 
@@ -37,13 +38,14 @@ class APyEC(QtGui.QMainWindow):
         self.ui.sortbyComboBox.addItem("Date Modified")
             
         # Load settings
-        self.directory = str(self.settings.value("directory", "./").toString())
+        self.directory = str(self.settings.value("directory", "./"))
 
         # Restore geometry
-        self.restoreGeometry(self.settings.value("main_window").toByteArray())
-        self.ui.mainSplitter.restoreState(self.settings.value("main_splitter").toByteArray())
-        self.ui.notebookSplitter.restoreState(self.settings.value("notebook_splitter").toByteArray())
-            
+        self.move(self.settings.value("main_window.pos", QtCore.QPoint(100,100)))
+        self.resize(self.settings.value("main_window.size", self.size()))
+        self.ui.mainSplitter.restoreState(self.settings.value("main_splitter", self.ui.mainSplitter.saveState()))
+        self.ui.notebookSplitter.restoreState(self.settings.value("notebook_splitter", self.ui.notebookSplitter.saveState()))
+
         # Connect signals
         self.ui.actionNew_Note.triggered.connect(self.handleNewNote)
         self.ui.actionNew_Notebook.triggered.connect(self.handleNewNotebook)
@@ -69,23 +71,24 @@ class APyEC(QtGui.QMainWindow):
         self.loadNotebooks()
 
         # Check that we have a valid identity for git commits.
-        if self.settings.value("username", None).isNull():
+        if (self.settings.value("username", "") == ""):
             # FIXME: Use a timer so that this dialog appears after the main window is displayed.
             self.handleChangeIdentity(True)
         else:
-            self.username = str(self.settings.value("username", None).toString())
-            self.email = str(self.settings.value("email", None).toString())
+            self.username = str(self.settings.value("username"))
+            self.email = str(self.settings.value("email"))
 
     @logger.logFn
     def closeEvent(self, event):
 
         # If we put anything on the clipboard, clear it before exitting.
-        clipboard = QtGui.QApplication.clipboard()
+        clipboard = QtWidgets.QApplication.clipboard()
         if clipboard.ownsClipboard():
             clipboard.clear()
         
         self.settings.setValue("directory", self.directory)
-        self.settings.setValue("main_window", self.saveGeometry())
+        self.settings.setValue("main_window.pos", self.pos())
+        self.settings.setValue("main_window.size", self.size())
         self.settings.setValue("main_splitter", self.ui.mainSplitter.saveState())
         self.settings.setValue("notebook_splitter", self.ui.notebookSplitter.saveState())
 
@@ -105,11 +108,11 @@ class APyEC(QtGui.QMainWindow):
     def handleEditNote(self, a_note, note_content):
         ok = True
         if not a_note.isLatestVersion(note_content):
-            reply = QtGui.QMessageBox.warning(self,
-                                              'Warning',
-                                              'This is not the latest version of this note, edit anyway?',
-                                              QtGui.QMessageBox.Yes, QtGui.QMessageBox.No)
-            if (reply == QtGui.QMessageBox.Yes):
+            reply = QtWidgets.QMessageBox.warning(self,
+                                                  'Warning',
+                                                  'This is not the latest version of this note, edit anyway?',
+                                                  QtWidgets.QMessageBox.Yes, QtWidgets.QMessageBox.No)
+            if (reply == QtWidgets.QMessageBox.Yes):
                 ok = True
             else:
                 ok = False
@@ -118,7 +121,7 @@ class APyEC(QtGui.QMainWindow):
             if temp is not None:
                 temp.getEditor().raise_()
             else:
-                temp = editor.Editor(a_note, note_content, self)
+                temp = editor.Editor(a_note, note_content, parent = self)
                 a_note.setEditor(temp)
                 temp.show()
             temp.noteSaved.connect(self.ui.noteMVC.updateNoteDisplay)
@@ -131,9 +134,9 @@ class APyEC(QtGui.QMainWindow):
         
     @logger.logFn            
     def handleNewNote(self, nb = None):
-        [name, ok] = QtGui.QInputDialog.getText(self,
-                                                'New Note',
-                                                'Enter the notes name:')        
+        [name, ok] = QtWidgets.QInputDialog.getText(self,
+                                                    'New Note',
+                                                    'Enter the notes name:')        
         if ok:
             if not (isinstance(nb, notebook.NotebookStandardItem)):
                 nb = notebook.chooseNotebook(self.ui.notebookMVC)
@@ -142,18 +145,18 @@ class APyEC(QtGui.QMainWindow):
 
     @logger.logFn
     def handleNewNotebook(self, boolean = False):
-        [notebook_name, ok] = QtGui.QInputDialog.getText(self,
-                                                         'New Notebook',
-                                                         'Enter the notebooks name:')        
+        [notebook_name, ok] = QtWidgets.QInputDialog.getText(self,
+                                                             'New Notebook',
+                                                             'Enter the notebooks name:')        
         if ok:
             self.ui.notebookMVC.addNotebook(self.directory, str(notebook_name), self.username, self.email)
 
     @logger.logFn            
     def handleSetDirectory(self, boolean):
-        directory = str(QtGui.QFileDialog.getExistingDirectory(self,
+        directory = QtWidgets.QFileDialog.getExistingDirectory(self,
                                                                "New Directory",
                                                                str(self.directory),
-                                                               QtGui.QFileDialog.ShowDirsOnly))
+                                                               QtWidgets.QFileDialog.ShowDirsOnly)
         if directory:
             if (directory[-1] != "/"):
                 directory += "/"
@@ -174,7 +177,7 @@ class APyEC(QtGui.QMainWindow):
         
 
 if (__name__ == "__main__"):
-    app = QtGui.QApplication(sys.argv)
+    app = QtWidgets.QApplication(sys.argv)
 
     window = APyEC()
     window.show()

@@ -12,7 +12,7 @@ import uuid
 from xml.dom import minidom
 from xml.etree import ElementTree
 
-from PyQt4 import QtCore, QtGui
+from PyQt5 import QtCore, QtGui, QtWidgets
 
 import userinfo_ui as userInfoUi
 
@@ -78,7 +78,7 @@ def gitGetLog(directory):
         return []
     
     log = []
-    for i in range(len(log_text)/4):
+    for i in range(int(len(log_text)/4)):
         log.append([log_text[4*i], log_text[4*i+1], log_text[4*i+3]])
     return log
 
@@ -203,16 +203,16 @@ def pSaveXML(filename, xml):
     reparsed = minidom.parseString(rough_string)
         
     with open(filename, "w") as fp:
-        fp.write(reparsed.toprettyxml(indent="  ", encoding = "ISO-8859-1"))
+        fp.write(reparsed.toprettyxml(indent="  ", encoding = "ISO-8859-1").decode())
 
 
-class UserInfoDialog(QtGui.QDialog):
+class UserInfoDialog(QtWidgets.QDialog):
     """
     Dialog for getting (or changing) the username and email address used by git.
     """
     @logger.logFn
-    def __init__(self, username, email, parent = None):
-        QtGui.QDialog.__init__(self, parent)
+    def __init__(self, username, email, **kwds):
+        super().__init__(**kwds)
 
         self.ui = userInfoUi.Ui_Dialog()
         self.ui.setupUi(self)

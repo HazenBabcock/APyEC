@@ -8,7 +8,7 @@ import functools
 import logging
 import logging.handlers
 
-from PyQt4 import QtCore
+from PyQt5 import QtCore
 
 a_logger = False
 
@@ -33,7 +33,7 @@ def startLogging(directory):
     global a_logger
 
     settings = QtCore.QSettings("apyec", "apyec")
-    index = settings.value("logging_file_index", 1).toInt()[0]
+    index = int(settings.value("logging_file_index", 1))
     new_index = index + 1
     if (new_index > 100):
         new_index = 1

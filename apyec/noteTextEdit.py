@@ -4,13 +4,13 @@
    :synopsis: A QTextEdit specialized for editting notes.
 """
 
-from PyQt4 import QtCore, QtGui
+from PyQt5 import QtWidgets
 
 
-class NoteTextEdit(QtGui.QTextEdit):
+class NoteTextEdit(QtWidgets.QTextEdit):
 
     def __init__(self, parent = None):
-        QtGui.QTextEdit.__init__(self, parent)
+        super().__init__(parent)
         self.note_content = None
                  
     def insertFromMimeData(self, mimedata):
@@ -22,7 +22,7 @@ class NoteTextEdit(QtGui.QTextEdit):
                 if (len(data) == 4):
                     self.insertPlainText(self.note_content.formatLink(data[1], "apyec:/" + data[2]))
                     return
-        QtGui.QTextEdit.insertFromMimeData(self, mimedata)
-                
+        super().insertFromMimeData(mimedata)
+    
     def setNoteContent(self, note_content):
         self.note_content = note_content

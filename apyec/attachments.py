@@ -9,18 +9,19 @@ import os
 import shutil
 import uuid
 
-from PyQt4 import QtCore, QtGui, QtWebKit
+from PyQt5 import QtCore, QtGui, QtWidgets
 
 import logger
 import misc
 
-class AttachmentsMVC(QtGui.QListView):
+class AttachmentsMVC(QtWidgets.QListView):
     """
     Encapsulates a list view specialized for attachments.
     """
     @logger.logFn    
     def __init__(self, parent = None):
-        QtGui.QListView.__init__(self, parent)
+        super().__init__(parent)
+
         self.directory = None      # This is the directory associated with the notebook.
         self.note = None
         self.note_content = None
@@ -28,26 +29,26 @@ class AttachmentsMVC(QtGui.QListView):
         self.settings = QtCore.QSettings("apyec", "apyec")
 
         # This is the directory where an attachment was most recently saved to.
-        self.saveas_directory = str(self.settings.value("saveas_directory", ".").toString())
+        self.saveas_directory = str(self.settings.value("saveas_directory", "."))
 
         # Drag and drop
         self.setAcceptDrops(True)
         
         # Context menu
-        self.copyLinkAction = QtGui.QAction(self.tr("Copy Link to Clipboard"), self)
+        self.copyLinkAction = QtWidgets.QAction(self.tr("Copy Link to Clipboard"), self)
         self.copyLinkAction.triggered.connect(self.handleCopyLink)
-        self.deleteAttachmentAction = QtGui.QAction(self.tr("Delete Attachment"), self)
+        self.deleteAttachmentAction = QtWidgets.QAction(self.tr("Delete Attachment"), self)
         self.deleteAttachmentAction.triggered.connect(self.handleDeleteAttachment)
-        self.saveAsAction = QtGui.QAction(self.tr("Save Attachment as"), self)
+        self.saveAsAction = QtWidgets.QAction(self.tr("Save Attachment as"), self)
         self.saveAsAction.triggered.connect(self.handleSaveAs)
 
-        self.popup_menu = QtGui.QMenu(self)
+        self.popup_menu = QtWidgets.QMenu(self)
         self.popup_menu.addAction(self.copyLinkAction)
         self.popup_menu.addAction(self.deleteAttachmentAction)
         self.popup_menu.addAction(self.saveAsAction)
 
         # Attachments model
-        self.attachment_model = QtGui.QStandardItemModel()
+        self.attachment_model = QtWidgets.QStandardItemModel()
         self.setModel(self.attachment_model)
 
     @logger.logFn        
@@ -78,7 +79,7 @@ class AttachmentsMVC(QtGui.QListView):
         
     @logger.logFn        
     def handleCopyLink(self, boolean):
-        clipboard = QtGui.QApplication.clipboard()
+        clipboard = QtWidgets.QApplication.clipboard()
         an_attachment = self.attachment_model.itemFromIndex(self.right_clicked)
         clipboard.setText(self.note_content.formatLink(an_attachment.getFilename(),
                                                        an_attachment.getFullname(),
@@ -94,10 +95,10 @@ class AttachmentsMVC(QtGui.QListView):
     @logger.logFn
     def handleSaveAs(self, boolean):
         an_attachment = self.attachment_model.itemFromIndex(self.right_clicked)
-        saveas_filename = QtGui.QFileDialog.getSaveFileName(self,
-                                                            "Save As",
-                                                            self.saveas_directory + "/" + an_attachment.getFilename(),
-                                                            "*")
+        saveas_filename = QtWidgets.QFileDialog.getSaveFileName(self,
+                                                                "Save As",
+                                                                self.saveas_directory + "/" + an_attachment.getFilename(),
+                                                                "*")
         if saveas_filename:
             saveas_filename = str(saveas_filename)
             self.saveas_directory = os.path.dirname(saveas_filename)
@@ -111,7 +112,7 @@ class AttachmentsMVC(QtGui.QListView):
             if (self.right_clicked.row() > -1):
                 self.popup_menu.exec_(event.globalPos())
         else:
-            QtGui.QListView.mousePressEvent(self, event)
+            super().mousePressEvent(self, event)
 
     @logger.logFn
     def newNote(self, a_note, note_content):
@@ -131,7 +132,8 @@ class AttachmentsStandardItem(QtGui.QStandardItem):
     """
     @logger.logFn    
     def __init__(self):
-        QtGui.QStandardItem.__init__(self, "NA")
+        super().__init__("NA")
+        
         self.setEditable(False)
         self.directory = None  # The notebooks directory.
         self.filename = None   # The attachment file name.

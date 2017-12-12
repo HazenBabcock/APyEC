@@ -8,7 +8,7 @@ import datetime
 import os
 import webbrowser
 
-from PyQt4 import QtCore, QtGui, QtWebKit
+from PyQt5 import QtCore, QtGui, QtWebEngineWidgets, QtWidgets
 
 import editor_ui as editorUi
 import viewer_ui as viewerUi
@@ -21,15 +21,15 @@ import logger
 #  Maybe someone else has already written a better editor (and viewer) than this?
 #
 
-class Editor(QtGui.QDialog):
+class Editor(QtWidgets.QDialog):
     """
     Handles interaction with the ui.editTab
     """
     noteSaved = QtCore.pyqtSignal(object)
 
     @logger.logFn
-    def __init__(self, note, note_content, parent = None):
-        QtGui.QDialog.__init__(self, parent)
+    def __init__(self, note, note_content, **kwds):
+        super().__init__(**kwds)
 
         self.is_dirty = False
         self.note = note
@@ -37,7 +37,7 @@ class Editor(QtGui.QDialog):
         self.settings = QtCore.QSettings("apyec", "apyec")
 
         # This is the directory that the attachment was loaded from.
-        self.attach_directory = str(self.settings.value("attach_directory", ".").toString())
+        self.attach_directory = str(self.settings.value("attach_directory", "."))
         
         # Note editting timer, to reduce the number of update
         # events when the user is typing.
@@ -56,14 +56,15 @@ class Editor(QtGui.QDialog):
         self.ui.keywordEditorMVC.addKeywords(self.note_content.getKeywords())
 
         # Restore Geometry.
-        self.restoreGeometry(self.settings.value("edit_dialog").toByteArray())
-        self.ui.editSplitter.restoreState(self.settings.value("edit_splitter").toByteArray())
-        self.ui.keywordSplitter.restoreState(self.settings.value("keyword_splitter").toByteArray())
-        self.ui.viewEditSplitter.restoreState(self.settings.value("view_edit_splitter").toByteArray())
+        self.move(self.settings.value("edit_dialog.pos", QtCore.QPoint(100,100)))
+        self.resize(self.settings.value("edit_dialog.size", self.size()))
+        self.ui.editSplitter.restoreState(self.settings.value("edit_splitter", None))
+        self.ui.keywordSplitter.restoreState(self.settings.value("keyword_splitter", None))
+        self.ui.viewEditSplitter.restoreState(self.settings.value("view_edit_splitter", None))
         
         self.viewer = Viewer(self.ui.noteGroupBox)
-        layout = QtGui.QHBoxLayout()
-        layout.setMargin(2)
+        layout = QtWidgets.QHBoxLayout()
+        layout.setContentsMargins(2,2,2,2)
         layout.addWidget(self.viewer)
         self.ui.noteGroupBox.setLayout(layout)
         self.viewer.newNoteEdit(note, note_content)
@@ -91,7 +92,8 @@ class Editor(QtGui.QDialog):
     def closeEvent(self, event):
         self.note.setEditor(None)
         self.settings.setValue("attach_directory", self.attach_directory)
-        self.settings.setValue("edit_dialog", self.saveGeometry())
+        self.settings.setValue("edit_dialog.pos", self.pos())
+        self.settings.setValue("edit_dialog.size", self.size())
         self.settings.setValue("edit_splitter", self.ui.editSplitter.saveState())
         self.settings.setValue("keyword_splitter", self.ui.keywordSplitter.saveState())
         self.settings.setValue("view_edit_splitter", self.ui.viewEditSplitter.saveState())
@@ -161,7 +163,7 @@ class Editor(QtGui.QDialog):
         self.viewer.updateWebView(unicode(note_content))
 
 
-class Viewer(QtGui.QWidget):
+class Viewer(QtWidgets.QWidget):
     """
     Handles interaction with a viewer form.
     """
@@ -169,8 +171,9 @@ class Viewer(QtGui.QWidget):
     noteLinkClicked = QtCore.pyqtSignal(str, str)
 
     @logger.logFn    
-    def __init__(self, parent = None):
-        QtGui.QWidget.__init__(self, parent)
+    def __init__(self, **kwds):
+        super().__init__(**kwds)
+
         self.base_url = None
         self.note = None
         self.note_content = None
@@ -178,18 +181,18 @@ class Viewer(QtGui.QWidget):
         self.ui = viewerUi.Ui_Form()
         self.ui.setupUi(self)
 
-        self.web_viewer = WebViewer(self)
+        self.web_viewer = WebViewer(parent = self)
 
-        layout = QtGui.QHBoxLayout()
-        layout.setMargin(2)
+        layout = QtWidgets.QHBoxLayout()
+        layout.setContentsMargins(2,2,2,2)
         layout.addWidget(self.web_viewer)
         self.ui.webViewFrame.setLayout(layout)
 
         self.ui.editPushButton.clicked.connect(self.handleEditButton)
         self.ui.versionComboBox.currentIndexChanged.connect(self.handleVersionChange)
-        self.web_viewer.copyLink.connect(self.handleCopyLink)
-        self.web_viewer.linkClicked.connect(self.handleLinkClicked)
-        self.web_viewer.printNote.connect(self.handlePrint)
+        #self.web_viewer.copyLink.connect(self.handleCopyLink)
+        #self.web_viewer.linkClicked.connect(self.handleLinkClicked)
+        #self.web_viewer.printNote.connect(self.handlePrint)
 
         self.ui.keywordLabel.hide()
         self.ui.versionWidget.hide()
@@ -303,36 +306,37 @@ class Viewer(QtGui.QWidget):
             self.ui.dateLabel.setText("")        
     
 
-class WebViewer(QtWebKit.QWebView):
+class WebViewer(QtWebEngineWidgets.QWebEngineView):
     """
     Web viewer specialized for apyec.
     """
     copyLink = QtCore.pyqtSignal()
     printNote = QtCore.pyqtSignal(bool)
     
-    def __init__(self, parent):
-        QtWebKit.QWebView.__init__(self)
+    def __init__(self, **kwds):
+        super().__init__(**kwds)
+
         self.have_content = False
         self.link = ""
         self.pixmap = None
         self.tooltip_timer = QtCore.QTimer()
                 
-        self.page().setLinkDelegationPolicy(QtWebKit.QWebPage.DelegateAllLinks)
-        self.page().linkHovered.connect(self.handleLinkHover)
+        #self.page().setLinkDelegationPolicy(QtWebKit.QWebPage.DelegateAllLinks)
+        #self.page().linkHovered.connect(self.handleLinkHover)
 
         # Configure context menus.
-        self.copyImageAction = QtGui.QAction(self.tr("Copy Image to Clipboard"), self)
+        self.copyImageAction = QtWidgets.QAction(self.tr("Copy Image to Clipboard"), self)
         self.copyImageAction.triggered.connect(self.handleCopyImage)
-        self.copyLinkAction = QtGui.QAction(self.tr("Copy Link to Clipboard"), self)
+        self.copyLinkAction = QtWidgets.QAction(self.tr("Copy Link to Clipboard"), self)
         self.copyLinkAction.triggered.connect(self.handleCopyLink)
-        self.printNoteAction = QtGui.QAction(self.tr("Print"), self)
+        self.printNoteAction = QtWidgets.QAction(self.tr("Print"), self)
         self.printNoteAction.triggered.connect(self.handlePrintNote)
 
-        self.webviewer_no_image_menu = QtGui.QMenu(self)
+        self.webviewer_no_image_menu = QtWidgets.QMenu(self)
         self.webviewer_no_image_menu.addAction(self.copyLinkAction)
         self.webviewer_no_image_menu.addAction(self.printNoteAction)
         
-        self.webviewer_image_menu = QtGui.QMenu(self)
+        self.webviewer_image_menu = QtWidgets.QMenu(self)
         self.webviewer_image_menu.addAction(self.copyLinkAction)
         self.webviewer_image_menu.addAction(self.printNoteAction)
         self.webviewer_image_menu.addAction(self.copyImageAction)
@@ -354,7 +358,7 @@ class WebViewer(QtWebKit.QWebView):
 
     @logger.logFn
     def handleCopyImage(self, boolean):
-        clipboard = QtGui.QApplication.clipboard()
+        clipboard = QtWidgets.QApplication.clipboard()
         clipboard.setPixmap(self.pixmap)
 
     @logger.logFn
@@ -365,7 +369,7 @@ class WebViewer(QtWebKit.QWebView):
     def handleLinkHover(self, link, title, context):
         if (len(link) > 0):            
             self.link = link
-            QtGui.QToolTip.showText(QtGui.QCursor.pos(), self.link, self)
+            QtWidgets.QToolTip.showText(QtGui.QCursor.pos(), self.link, self)
             self.tooltip_timer.start()
         else:
             self.tooltip_timer.stop()
@@ -375,8 +379,8 @@ class WebViewer(QtWebKit.QWebView):
         self.printNote.emit(True)
 
     def handleTooltipTimer(self):
-        QtGui.QToolTip.showText(QtGui.QCursor.pos(), self.link, self)
+        QtWidgets.QToolTip.showText(QtGui.QCursor.pos(), self.link, self)
         
     def setHtml(self, html, base_url = QtCore.QUrl()):
         self.have_content = True
-        QtWebKit.QWebView.setHtml(self, html, base_url)
+        super().setHtml(html, base_url)
