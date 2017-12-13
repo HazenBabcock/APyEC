@@ -290,8 +290,10 @@ class Viewer(QtWidgets.QWidget):
         html = self.note_content.convertToHTML(content)
         
         # Display.
+        self.web_viewer.setEnabled(False)
         self.web_viewer.setHtml(html, self.base_url)
-
+        self.web_viewer.setEnabled(True)
+        
     @logger.logFn
     def versionChange(self, version):
         self.note_content = self.note.loadNoteContent(version)
@@ -345,6 +347,8 @@ class WebViewer(QtWebEngineWidgets.QWebEngineView):
         # too quickly, a surprisingly difficult task in Qt..
         self.tooltip_timer.setInterval(100)
         self.tooltip_timer.timeout.connect(self.handleTooltipTimer)
+
+        #self.settings().setAttribute(QtWebEngineWidgets.QWebEngineView.FocusOnNavigationEnabled, False)
         
     @logger.logFn
     def contextMenuEvent(self, event):
