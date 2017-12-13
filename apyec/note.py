@@ -495,7 +495,6 @@ class NoteSortFilterProxyModel(QtCore.QSortFilterProxyModel):
         """
         Custom sorting.
         """
-        print("lt")
         left_note = self.sourceModel().itemFromIndex(left)
         right_note = self.sourceModel().itemFromIndex(right)
         if (self.sort_mode == "Name"):
