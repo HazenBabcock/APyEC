@@ -98,7 +98,7 @@ class AttachmentsMVC(QtWidgets.QListView):
         saveas_filename = QtWidgets.QFileDialog.getSaveFileName(self,
                                                                 "Save As",
                                                                 self.saveas_directory + "/" + an_attachment.getFilename(),
-                                                                "*")
+                                                                "*")[0]
         if saveas_filename:
             saveas_filename = str(saveas_filename)
             self.saveas_directory = os.path.dirname(saveas_filename)

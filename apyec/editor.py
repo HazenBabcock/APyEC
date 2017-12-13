@@ -58,9 +58,9 @@ class Editor(QtWidgets.QDialog):
         # Restore Geometry.
         self.move(self.settings.value("edit_dialog.pos", QtCore.QPoint(100,100)))
         self.resize(self.settings.value("edit_dialog.size", self.size()))
-        self.ui.editSplitter.restoreState(self.settings.value("edit_splitter", None))
-        self.ui.keywordSplitter.restoreState(self.settings.value("keyword_splitter", None))
-        self.ui.viewEditSplitter.restoreState(self.settings.value("view_edit_splitter", None))
+        self.ui.editSplitter.restoreState(self.settings.value("edit_splitter", self.ui.editSplitter.saveState()))
+        self.ui.keywordSplitter.restoreState(self.settings.value("keyword_splitter", self.ui.keywordSplitter.saveState()))
+        self.ui.viewEditSplitter.restoreState(self.settings.value("view_edit_splitter", self.ui.viewEditSplitter.saveState()))
         
         self.viewer = Viewer(self.ui.noteGroupBox)
         layout = QtWidgets.QHBoxLayout()
@@ -104,10 +104,10 @@ class Editor(QtWidgets.QDialog):
 
     @logger.logFn    
     def handleAttachUpload(self, boolean):
-        upload_filename = QtGui.QFileDialog.getOpenFileName(self,
-                                                            "Upload File",
-                                                            self.attach_directory,
-                                                            "*")
+        upload_filename = QtWidgets.QFileDialog.getOpenFileName(self,
+                                                                "Upload File",
+                                                                self.attach_directory,
+                                                                "*")[0]
         if upload_filename:
             upload_filename = str(upload_filename)
             self.attach_directory = os.path.dirname(upload_filename)
@@ -116,11 +116,11 @@ class Editor(QtWidgets.QDialog):
     @logger.logFn
     def handleClose(self, boolean):
         if self.is_dirty:
-            reply = QtGui.QMessageBox.warning(self,
-                                              'Warning',
-                                              'Changes have not been saved, close anyway?',
-                                              QtGui.QMessageBox.Yes, QtGui.QMessageBox.No)
-            if (reply == QtGui.QMessageBox.Yes):
+            reply = QtWidgets.QMessageBox.warning(self,
+                                                  'Warning',
+                                                  'Changes have not been saved, close anyway?',
+                                                  QtWidgets.QMessageBox.Yes, QtWidgets.QMessageBox.No)
+            if (reply == QtWidgets.QMessageBox.Yes):
                 self.close()
         else:
             self.close()
@@ -139,7 +139,7 @@ class Editor(QtWidgets.QDialog):
     @logger.logFn
     def handleSave(self, boolean):
         if self.is_dirty:
-            self.note_content.setContent(unicode(self.ui.noteTextEdit.toPlainText()))
+            self.note_content.setContent(self.ui.noteTextEdit.toPlainText())
             self.note_content.setKeywords(self.ui.keywordEditorMVC.getAllKeywords())
             self.note.saveNote(self.note_content)
             self.is_dirty = False
@@ -152,7 +152,7 @@ class Editor(QtWidgets.QDialog):
 
     @logger.logFn
     def handleUpdateTimer(self):
-        note_content = unicode(self.ui.noteTextEdit.toPlainText())
+        note_content = self.ui.noteTextEdit.toPlainText()
         if (note_content != self.note_content.getContent()):
             self.is_dirty = True
             self.ui.closeButton.setStyleSheet("QPushButton { color: red }")
@@ -160,7 +160,7 @@ class Editor(QtWidgets.QDialog):
             self.is_dirty = False
             self.ui.closeButton.setStyleSheet("QPushButton { color: black }")
 
-        self.viewer.updateWebView(unicode(note_content))
+        self.viewer.updateWebView(note_content)
 
 
 class Viewer(QtWidgets.QWidget):
@@ -171,8 +171,8 @@ class Viewer(QtWidgets.QWidget):
     noteLinkClicked = QtCore.pyqtSignal(str, str)
 
     @logger.logFn    
-    def __init__(self, **kwds):
-        super().__init__(**kwds)
+    def __init__(self, parent = None):
+        super().__init__(parent)
 
         self.base_url = None
         self.note = None
@@ -232,7 +232,7 @@ class Viewer(QtWidgets.QWidget):
         
     @logger.logFn
     def handleVersionChange(self, new_index):
-        version = str(self.ui.versionComboBox.itemData(new_index).toString())
+        version = str(self.ui.versionComboBox.itemData(new_index))
         self.versionChange(version)
 
     @logger.logFn

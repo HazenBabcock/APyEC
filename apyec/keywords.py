@@ -110,17 +110,17 @@ class KeywordEditorMVC(QtWidgets.QListView):
     #selectedKeywordChanged = QtCore.pyqtSignal(object)
 
     @logger.logFn
-    def __init__(self, **kwds):
-        super().__init__(**kwds)
+    def __init__(self, parent = None):
+        super().__init__(parent)
 
         self.keywords = []
         self.right_clicked = None
 
         # Context menu
-        self.deleteKeywordAction = QtGui.QAction(self.tr("Delete Keyword"), self)
+        self.deleteKeywordAction = QtWidgets.QAction(self.tr("Delete Keyword"), self)
         self.deleteKeywordAction.triggered.connect(self.handleDeleteKeyword)
 
-        self.popup_menu = QtGui.QMenu(self)
+        self.popup_menu = QtWidgets.QMenu(self)
         self.popup_menu.addAction(self.deleteKeywordAction)
         
         # Keyword editor model.

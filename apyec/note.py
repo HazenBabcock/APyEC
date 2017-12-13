@@ -400,7 +400,7 @@ class NoteMVC(QtWidgets.QListView):
         """
         self.note_proxy_model.setSortMode(sort_mode)
         self.note_proxy_model.sort(0)
-        
+
     @logger.logFn            
     def loadNotes(self, notebook):
         """
@@ -495,6 +495,7 @@ class NoteSortFilterProxyModel(QtCore.QSortFilterProxyModel):
         """
         Custom sorting.
         """
+        print("lt")
         left_note = self.sourceModel().itemFromIndex(left)
         right_note = self.sourceModel().itemFromIndex(right)
         if (self.sort_mode == "Name"):
