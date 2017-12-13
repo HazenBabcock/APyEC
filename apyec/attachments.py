@@ -48,7 +48,7 @@ class AttachmentsMVC(QtWidgets.QListView):
         self.popup_menu.addAction(self.saveAsAction)
 
         # Attachments model
-        self.attachment_model = QtWidgets.QStandardItemModel()
+        self.attachment_model = QtGui.QStandardItemModel()
         self.setModel(self.attachment_model)
 
     @logger.logFn        

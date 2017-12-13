@@ -577,7 +577,7 @@ class NoteStandardItem(QtGui.QStandardItem):
             self.date_modified = note_content.getDate()
             self.name = note_content.getName()
 
-            if 0:
+            if False:
                 print(self.name)
                 print(str(self.date_created))
                 print(str(self.date_modified))

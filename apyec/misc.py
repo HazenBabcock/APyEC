@@ -53,7 +53,7 @@ def gitAddCommit(directory, files, commit):
 @logger.logFn
 @setDirectory
 def gitGetLastCommit(directory):
-    return subprocess.check_output(["git", "log", "-1", "--pretty=%B"])
+    return subprocess.check_output(["git", "log", "-1", "--pretty=%B"]).decode()
 
 
 @logger.logFn
@@ -62,7 +62,7 @@ def gitGetLastCommitId(directory):
     """
     Returns the SHA-1 id of the last commit.
     """
-    return subprocess.check_output(["git", "log", "-1", "--pretty=%H"]).strip()
+    return subprocess.check_output(["git", "log", "-1", "--pretty=%H"]).strip().decode()
 
 
 @logger.logFn
@@ -73,7 +73,7 @@ def gitGetLog(directory):
     returns it as [[commit hash, commit message, file changed], [..]].
     """
     try:
-        log_text = subprocess.check_output(["git", "log", "--name-only", "--pretty=%H%n%s"]).splitlines()
+        log_text = subprocess.check_output(["git", "log", "--name-only", "--pretty=%H%n%s"]).decode().splitlines()
     except subprocess.CalledProcessError:
         return []
     
@@ -87,13 +87,13 @@ def gitGetLog(directory):
 @setDirectory
 def gitGetRemote(directory):
     resp = subprocess.check_output(["git", "remote", "-v"])
-    return resp.splitlines()[0].split()[1]
+    return resp.splitlines()[0].decode().split()[1]
 
 
 @logger.logFn
 @setDirectory
 def gitGetVersion(directory, filename, commit_id):
-    return subprocess.check_output(["git", "show", commit_id + ":" + filename])
+    return subprocess.check_output(["git", "show", commit_id + ":" + filename]).decode()
 
 
 @logger.logFn
@@ -103,7 +103,7 @@ def gitGetVersionIDs(directory, filename):
     Returns the commit IDs for every version of a file.
     """
     resp = subprocess.check_output(["git", "rev-list", "--all", "--", filename])
-    return resp.splitlines()
+    return resp.decode().splitlines()
 
 
 @logger.logFn

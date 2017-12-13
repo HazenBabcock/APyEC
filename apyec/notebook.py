@@ -415,7 +415,7 @@ class NotebookStandardItem(QtGui.QStandardItem):
             self.git_log = misc.gitGetLog(self.directory)
             self.has_unpushed = misc.gitHasUnpushed(self.directory)
             self.setToolTip(self.directory)
-            
+
             return True
         else:
             return False
